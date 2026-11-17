@@ -1,0 +1,12 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Layout, { NotFound } from './App';
+import Home from './routes/Home';
+import Collection from './routes/Collection';
+import ProductPage from './routes/Product';
+import Bag from './routes/Bag';
+import Checkout from './routes/Checkout';
+import './styles/index.css';
+const router = createBrowserRouter([{ path: '/', element: <Layout />, children: [{ index: true, element: <Home /> }, { path: 'collections/:slug', element: <Collection /> }, { path: 'products/:slug', element: <ProductPage /> }, { path: 'bag', element: <Bag /> }, { path: 'checkout', element: <Checkout /> }, { path: '*', element: <NotFound /> }] }]);
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><RouterProvider router={router} /></React.StrictMode>);

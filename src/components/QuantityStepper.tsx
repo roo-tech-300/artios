@@ -1,0 +1,1 @@
+export default function QuantityStepper({ quantity, onChange }: { quantity: number; onChange: (qty: number) => void }) { return <div className="stepper"><button aria-label="Decrease quantity" onClick={() => onChange(quantity - 1)}>−</button><span>{quantity}</span><button aria-label="Increase quantity" onClick={() => onChange(quantity + 1)}>+</button></div>; }
