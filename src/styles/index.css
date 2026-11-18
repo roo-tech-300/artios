@@ -92,4 +92,6 @@
 /* Footer */
 .footer-address{font:400 .67rem/1.7 'Inter',sans-serif;letter-spacing:.035em;color:#e3ddd5;margin:0;max-width:220px}.newsletter-title{font:400 1.4rem 'Cormorant Garamond',serif;margin:0 0 15px}.footer-whatsapp{color:var(--paper)}.footer-whatsapp span{color:var(--gold)}
 @media (max-width:767px){.wordmark{gap:8px}.wordmark-mark{width:18px;height:26px}.size-picker button{min-width:56px;height:48px}}
-@media (max-width:420px){.wordmark-mark{display:none}}
+.size-picker+.details-block{margin-top:34px}.form-grid+.secure-note{margin-top:18px}
+@media (max-width:400px){.masthead{padding-inline:14px}.wordmark{font-size:1.22rem;gap:6px}.wordmark-mark{width:15px;height:22px}.masthead-actions{gap:2px}}
+@media (max-width:767px){.wordmark-mark{width:22px;height:31px}}@media (max-width:400px){.wordmark-mark{width:20px;height:28px}.wordmark{gap:7px}}
