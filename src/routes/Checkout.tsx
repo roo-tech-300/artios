@@ -53,7 +53,7 @@ export default function Checkout() {
     <a className="outline-button whatsapp-button" href={order.link} target="_blank" rel="noopener noreferrer">WhatsApp didn’t open? Tap here</a>
     <div className="checkout-contact-links">
       <a className="text-link" href={store.phoneHref}>Call {store.phoneDisplay} <span>↗</span></a>
-      <a className="text-link" href={`mailto:${store.email}?subject=${encodeURIComponent(`Order ${order.number}`)}&body=${encodeURIComponent(order.message.replace(/*/g, '').replace("in this chat", "attached to this email"))}`}>Email the order instead <span>↗</span></a>
+      <a className="text-link" href={`mailto:${store.email}?subject=${encodeURIComponent(`Order ${order.number}`)}&body=${encodeURIComponent(order.message.replace(/\*/g, '').replace("in this chat", "attached to this email"))}`}>Email the order instead <span>↗</span></a>
     </div>
   </section>;
 
