@@ -1,7 +1,7 @@
 // Store contact details. Change them here and the whole site updates.
 export const store = {
   name: 'Artios Fashion House',
-  email: 'artioswoman@gmail.com',
+  email: 'matkaltungo@gmail.com',
   phoneDisplay: '+234 803 040 6062',
   phoneHref: 'tel:+2348030406062',
   // WhatsApp number in international format, digits only (no +, spaces or leading 0).
