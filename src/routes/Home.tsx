@@ -8,7 +8,8 @@ import Eyebrow from '../components/Eyebrow';
 import ProductTile from '../components/ProductTile';
 import Marquee from '../components/Marquee';
 import GarmentPreview from '../components/GarmentPreview';
-import products, { apparelColors } from '../data/products';
+import { apparelColors } from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import { tagline, collectionName, marqueeLines, meaning, phrases } from '../brand';
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -70,7 +71,7 @@ function StudioTeaser() {
   return <section className="teaser">
     <div className="teaser-stage">
       <div className="teaser-orbit" aria-hidden="true" />
-      <GarmentPreview garment={i % 2 ? 'hoodie' : 'tee'} color={color} phrase={phrase} side={i % 3 ? 'left' : 'right'} glow backdrop={false} />
+      <GarmentPreview garment={i % 2 ? 'hoodie' : 'tee'} color={color} phrase={phrase} side={(['centre', 'left', 'right'] as const)[i % 3]} glow />
       <div className="teaser-swatches">{apparelColors.map((c, n) => <span key={c.name} className={n === i % apparelColors.length ? 'is-active' : ''} style={{ background: c.hex }} />)}</div>
     </div>
     <motion.div className="teaser-copy" initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 1, ease }}>
@@ -120,6 +121,7 @@ function Editorial() {
 }
 
 export default function Home() {
+  const products = useProducts();
   const featured = products.filter(p => p.featured).slice(0, 4);
   return <>
     <Hero />

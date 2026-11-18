@@ -9,6 +9,7 @@ import { phrases } from '../brand';
 import { formatPrice } from '../lib/format';
 import { useCart } from '../context/CartContext';
 import GarmentPreview from './GarmentPreview';
+import type { LogoSide } from './GarmentPreview';
 import SizeGuide from './SizeGuide';
 import StickyBuy from './StickyBuy';
 
@@ -17,7 +18,7 @@ type Props = { product: Product; initialColor?: string; showNote?: boolean; phot
 export default function Configurator({ product, initialColor, showNote = false, photos = [], header }: Props) {
   const garment = product.garment!;
   const [color, setColor] = useState(findColor(product, initialColor)!.name);
-  const [side, setSide] = useState<'left' | 'right'>('left');
+  const [side, setSide] = useState<LogoSide>('centre');
   const [phrase, setPhrase] = useState<string>(phrases[3]);
   const [placement, setPlacement] = useState<'front' | 'back'>('front');
   const [size, setSize] = useState<string>();
@@ -71,8 +72,9 @@ export default function Configurator({ product, initialColor, showNote = false, 
       </fieldset>
 
       <fieldset className="opt">
-        <legend>Logo position <em>Top {side}</em></legend>
-        <div className="segmented">{(['left', 'right'] as const).map(s => <button key={s} type="button" className={side === s ? 'is-active' : ''} aria-pressed={side === s} onClick={() => { setSide(s); setView('front'); setPhoto(null); }}>Top {s}</button>)}</div>
+        <legend>Logo position <em>{side === 'centre' ? 'Centre' : `Top ${side}`}</em></legend>
+        <div className="segmented">{(['left', 'centre', 'right'] as const).map(s => <button key={s} type="button" className={side === s ? 'is-active' : ''} aria-pressed={side === s} onClick={() => { setSide(s); setView('front'); setPhoto(null); }}>{s === 'centre' ? 'Centre' : `Top ${s}`}</button>)}</div>
+        <p className="opt-hint">{side === 'centre' ? 'Classic layout: Artios mark on the chest, lantern and ALÁTÙPÀ on the back.' : 'Corner layout: lantern, ALÁTÙPÀ and the Artios mark together on the chest.'}</p>
       </fieldset>
 
       <fieldset className="opt">

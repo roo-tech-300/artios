@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout, { NotFound } from './App';
@@ -8,7 +8,8 @@ import ProductPage from './routes/Product';
 import Bag from './routes/Bag';
 import Checkout from './routes/Checkout';
 import Studio from './routes/Studio';
+const Admin = lazy(() => import('./routes/Admin'));
 import './styles/index.css';
 import './styles/v2.css';
-const router = createBrowserRouter([{ path: '/', element: <Layout />, children: [{ index: true, element: <Home /> }, { path: 'collections/:slug', element: <Collection /> }, { path: 'products/:slug', element: <ProductPage /> }, { path: 'bag', element: <Bag /> }, { path: 'checkout', element: <Checkout /> }, { path: 'studio', element: <Studio /> }, { path: '*', element: <NotFound /> }] }]);
+const router = createBrowserRouter([{ path: '/', element: <Layout />, children: [{ index: true, element: <Home /> }, { path: 'collections/:slug', element: <Collection /> }, { path: 'products/:slug', element: <ProductPage /> }, { path: 'bag', element: <Bag /> }, { path: 'checkout', element: <Checkout /> }, { path: 'studio', element: <Studio /> }, { path: 'admin', element: <Suspense fallback={null}><Admin /></Suspense> }, { path: '*', element: <NotFound /> }] }]);
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><RouterProvider router={router} /></React.StrictMode>);

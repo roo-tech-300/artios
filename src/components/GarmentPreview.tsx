@@ -1,11 +1,23 @@
 import { useId } from 'react';
 import type { Garment, Swatch } from '../data/products';
 
-export type PrintOptions = { side?: 'left' | 'right'; phrase?: string; placement?: 'front' | 'back' };
+export type LogoSide = 'left' | 'centre' | 'right';
+export type PrintOptions = { side?: LogoSide; phrase?: string; placement?: 'front' | 'back' };
 type Props = PrintOptions & { garment: Garment; color: Swatch; view?: 'front' | 'back'; backdrop?: boolean; glow?: boolean; className?: string; title?: string };
 
-const LANTERN = { src: '/brand/lantern.webp', w: 353, h: 225 };
+// Realistic garment photos (from the client's mockups), recoloured per swatch. Prints are layered on top.
+const LANTERN = { src: '/brand/lantern.webp', w: 353, h: 225 };          // lantern with watercolour splash
+const LANTERN_TALL = { src: '/brand/lantern-tall.webp', w: 164, h: 374 }; // full lantern, for vertical layouts
 const LOGO = { dark: '/brand/artios-logo-dark.svg', light: '/brand/artios-logo-light.svg', w: 522.5, h: 168 };
+const STACKED = { dark: '/brand/artios-stacked-dark.svg', light: '/brand/artios-stacked-light.svg', w: 387.6, h: 333.1 };
+
+// Garment bounding boxes inside the 500 × 625 photo frame.
+const BOX = {
+  'tee-front': { x: 55.5, y: 56, w: 389, h: 500 },
+  'tee-back': { x: 53, y: 56, w: 394, h: 500 },
+  'hoodie-front': { x: 68.5, y: 56, w: 363, h: 512.5 },
+  'hoodie-back': { x: 70, y: 56, w: 359.5, h: 512.5 },
+};
 
 export function splitLines(text: string, max: number) {
   // Break at natural pauses (; or .) first, then wrap each part by length.
@@ -20,95 +32,95 @@ export function splitLines(text: string, max: number) {
   return lines;
 }
 
-const SHAPES = {
-  tee: {
-    body: 'M198 58 C212 100 288 100 302 58 L372 80 Q420 100 462 150 L428 232 L382 208 L384 525 Q250 537 116 525 L118 208 L72 232 L38 150 Q80 100 128 80 Z',
-    chestTop: 128, chestX: { left: 186, right: 314 }, backTop: 118, neckLogoY: 84,
-  },
-  hoodie: {
-    body: 'M175 92 L128 104 Q78 122 62 190 L36 470 L84 480 L104 262 L108 488 L108 522 Q250 532 392 522 L392 488 L396 262 L416 480 L464 470 L438 190 Q422 122 372 104 L325 92 Z',
-    chestTop: 182, chestX: { left: 180, right: 320 }, backTop: 150, neckLogoY: 112,
-  },
-};
+const slug = (name: string) => name.toLowerCase();
 
-export default function GarmentPreview({ garment, color, side = 'left', phrase, placement = 'front', view = 'front', backdrop = true, glow = false, className = '', title }: Props) {
+export default function GarmentPreview({ garment, color, side = 'centre', phrase, placement = 'front', view = 'front', glow = false, className = '', title }: Props) {
   const id = useId().replace(/:/g, '');
-  const shape = SHAPES[garment];
-  const ink = color.dark ? '#F3EEE4' : '#151313';
+  const box = BOX[`${garment}-${view}`];
+  const bw = box.w;
+  const ink = color.dark ? '#F3EEE4' : '#141212';
   const logo = color.dark ? LOGO.light : LOGO.dark;
-  const line = color.dark ? 'rgba(255,255,255,.16)' : 'rgba(0,0,0,.16)';
-  const showFrontPhrase = phrase && placement === 'front';
-  const showBackPhrase = phrase && placement === 'back';
+  const stacked = color.dark ? STACKED.light : STACKED.dark;
+  const blend = color.dark ? undefined : { mixBlendMode: 'multiply' as const };
+  const photo = `/garments/${garment}-${view}-${slug(color.name)}.webp`;
+  const frontPhrase = phrase && placement === 'front' ? phrase : undefined;
+  const backPhrase = phrase && placement === 'back' ? phrase : undefined;
+  const isTee = garment === 'tee';
 
-  const chest = (cx: number, top: number) => {
-    const lw = 70, lh = (lw * LANTERN.h) / LANTERN.w, logoW = 78, logoH = (logoW * LOGO.h) / LOGO.w;
-    const lines = showFrontPhrase ? splitLines(phrase!, 20) : [];
-    return <g className="g-print">
-      {glow && <circle className="lantern-glow" cx={cx} cy={top + lh * 0.62} r={30} fill={`url(#glow-${id})`} />}
+  const glowAt = (cx: number, cy: number, r: number) => glow ? <circle className="lantern-glow" cx={cx} cy={cy} r={r} fill={`url(#glow-${id})`} /> : null;
+  const phraseLines = (text: string, cx: number, top: number, size: number, max: number, italic = true) =>
+    splitLines(text, max).map((l, i, all) => <text key={i} x={cx} y={top + i * size * 1.2} textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle={italic ? 'italic' : 'normal'} fontWeight={500} fontSize={size} fill={ink}>{i === 0 ? '“' : ''}{l}{i === all.length - 1 ? '”' : ''}</text>);
+
+  // Lantern + ALÁTÙPÀ + Artios mark, as one lockup. Returns the bottom y so phrases can follow.
+  const lockup = (cx: number, top: number, lw: number) => {
+    const lh = (lw * LANTERN.h) / LANTERN.w, logoW = lw * 1.1, logoH = (logoW * LOGO.h) / LOGO.w;
+    return { bottom: top + lw * 1.0 + logoH + 6, el: <>
+      {glowAt(cx, top + lh * 0.62, lw * 0.42)}
       <image href={LANTERN.src} x={cx - lw / 2} y={top} width={lw} height={lh} />
-      <text x={cx} y={top + 66} textAnchor="middle" fontFamily="'Bebas Neue', Impact, sans-serif" fontSize={25} letterSpacing={1.2} fill={ink}>ALÁTÙPÀ</text>
-      <image href={logo} x={cx - logoW / 2} y={top + 72} width={logoW} height={logoH} />
-      {lines.map((l, i) => <text key={i} x={cx} y={top + 112 + i * 12.5} textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle="italic" fontSize={10.5} fill={ink}>{i === 0 ? '“' : ''}{l}{i === lines.length - 1 ? '”' : ''}</text>)}
-    </g>;
+      <text x={cx} y={top + lw * 0.943} textAnchor="middle" fontFamily="'Bebas Neue', Impact, sans-serif" fontSize={lw * 0.36} letterSpacing={lw * 0.017} fill={ink}>ALÁTÙPÀ</text>
+      <image href={logo} x={cx - logoW / 2} y={top + lw * 1.02} width={logoW} height={logoH} />
+    </> };
+  };
+
+  const front = () => {
+    if (side === 'centre') {
+      const w = bw * (isTee ? 0.27 : 0.25), h = (w * STACKED.h) / STACKED.w;
+      const cx = box.x + bw / 2, top = box.y + box.h * (isTee ? 0.16 : 0.3);
+      return <>
+        <image href={stacked} x={cx - w / 2} y={top} width={w} height={h} />
+        {frontPhrase && phraseLines(frontPhrase, cx, top + h + bw * 0.06, bw * 0.036, 26)}
+      </>;
+    }
+    const cx = box.x + bw * (side === 'left' ? (isTee ? 0.33 : 0.34) : (isTee ? 0.67 : 0.66));
+    const top = box.y + box.h * (isTee ? 0.19 : 0.32);
+    const l = lockup(cx, top, bw * 0.19);
+    return <>{l.el}{frontPhrase && phraseLines(frontPhrase, cx, l.bottom + bw * 0.04, bw * 0.027, 19)}</>;
   };
 
   const back = () => {
-    const top = shape.backTop;
-    const logoW = 56, logoH = (logoW * LOGO.h) / LOGO.w;
-    if (!showBackPhrase) return <image href={logo} x={250 - logoW / 2} y={shape.neckLogoY} width={logoW} height={logoH} opacity={0.9} />;
-    const lines = splitLines(phrase!, 15);
-    const lw = 66, lh = (lw * LANTERN.h) / LANTERN.w;
-    return <g className="g-print">
-      <image href={logo} x={250 - logoW / 2} y={shape.neckLogoY} width={logoW} height={logoH} opacity={0.9} />
-      {glow && <circle className="lantern-glow" cx={250} cy={top + 34 + lh * 0.62} r={30} fill={`url(#glow-${id})`} />}
-      <image href={LANTERN.src} x={250 - lw / 2} y={top + 34} width={lw} height={lh} />
-      {lines.map((l, i) => <text key={i} x={250} y={top + 118 + i * 35} textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle="italic" fontWeight={500} fontSize={31} fill={ink}>{l}</text>)}
-      <text x={250} y={top + 118 + lines.length * 35 + 8} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={8.5} letterSpacing={3.4} fill={ink} opacity={0.8}>ARTIOS · ALÁTÙPÀ</text>
-    </g>;
+    const cx = box.x + bw / 2;
+    if (side === 'centre') {
+      if (isTee) {
+        const lw = bw * 0.44, top = box.y + box.h * 0.11;
+        const l = lockupBackTee(cx, top, lw);
+        return <>{l.el}{backPhrase && phraseLines(backPhrase, cx, l.bottom + bw * 0.08, bw * 0.06, 18)}</>;
+      }
+      // Hoodie back, as in the mockup: vertical ALÁTÙPÀ beside a tall lantern.
+      const lw = bw * 0.2, lh = (lw * LANTERN_TALL.h) / LANTERN_TALL.w, top = box.y + box.h * 0.3, lx = cx - lw * 0.15;
+      const fs = lh * 0.345;
+      return <>
+        {glowAt(lx + lw / 2, top + lh * 0.62, lw * 0.6)}
+        <image href={LANTERN_TALL.src} x={lx} y={top} width={lw} height={lh} />
+        <text transform={`translate(${lx - 2} ${top + lh / 2}) rotate(-90)`} textAnchor="middle" fontFamily="'Bebas Neue', Impact, sans-serif" fontSize={fs} letterSpacing={fs * 0.02} fill={ink}>ALÁTÙPÀ</text>
+        {backPhrase && phraseLines(backPhrase, cx, top + lh + bw * 0.1, bw * 0.055, 18)}
+      </>;
+    }
+    // Corner layouts: small Artios mark at the neck, optional large phrase on the back.
+    const nw = bw * 0.16, nh = (nw * LOGO.h) / LOGO.w, ny = box.y + box.h * (isTee ? 0.07 : 0.27);
+    return <>
+      <image href={logo} x={cx - nw / 2} y={ny} width={nw} height={nh} opacity={0.92} />
+      {backPhrase && <>
+        {glowAt(cx, ny + nh + bw * 0.16, bw * 0.08)}
+        <image href={LANTERN.src} x={cx - bw * 0.1} y={ny + nh + bw * 0.08} width={bw * 0.2} height={bw * 0.2 * LANTERN.h / LANTERN.w} />
+        {phraseLines(backPhrase, cx, ny + nh + bw * 0.32, bw * 0.072, 15)}
+        <text x={cx} y={ny + nh + bw * 0.32 + splitLines(backPhrase, 15).length * bw * 0.086 + bw * 0.02} textAnchor="middle" fontFamily="Inter, sans-serif" fontSize={bw * 0.022} letterSpacing={bw * 0.009} fill={ink} opacity={0.85}>ARTIOS · ALÁTÙPÀ</text>
+      </>}
+    </>;
   };
 
-  return <svg className={`garment ${className}`} viewBox="0 0 500 625" role="img" aria-label={title ?? `${color.name} ${garment === 'tee' ? 'T-shirt' : 'hoodie'}, ${view} view`}>
-    <defs>
-      <radialGradient id={`bd-${id}`} cx="50%" cy="42%" r="75%"><stop offset="0" stopColor="#F3EDE4" /><stop offset="1" stopColor="#E7DED4" /></radialGradient>
-      <linearGradient id={`sh-${id}`} x1="0" x2="1"><stop offset="0" stopColor="#000" stopOpacity=".26" /><stop offset=".2" stopColor="#000" stopOpacity="0" /><stop offset=".8" stopColor="#000" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".26" /></linearGradient>
-      <radialGradient id={`hl-${id}`} cx="45%" cy="30%" r="60%"><stop offset="0" stopColor="#fff" stopOpacity={color.dark ? '.10' : '.18'} /><stop offset="1" stopColor="#fff" stopOpacity="0" /></radialGradient>
-      <radialGradient id={`glow-${id}`}><stop offset="0" stopColor="#FFB347" stopOpacity=".55" /><stop offset="1" stopColor="#FFB347" stopOpacity="0" /></radialGradient>
-      <filter id={`ds-${id}`} x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#3b2f22" floodOpacity=".18" /></filter>
-    </defs>
-    {backdrop && <rect width="500" height="625" fill={`url(#bd-${id})`} />}
-    <g transform="translate(0 46)">
-      {garment === 'hoodie' && <path d={view === 'front' ? 'M166 104 C158 34 342 34 334 104 Z' : 'M164 108 C150 16 350 16 336 108 Z'} className="g-fill" fill={color.hex} filter={`url(#ds-${id})`} />}
-      <path d={shape.body} className="g-fill" fill={color.hex} filter={`url(#ds-${id})`} />
-      <path d={shape.body} fill={`url(#sh-${id})`} />
-      <path d={shape.body} fill={`url(#hl-${id})`} />
-      {garment === 'tee' && view === 'front' && <>
-        <path d="M198 58 C215 70 285 70 302 58 C288 100 212 100 198 58 Z" fill="#000" opacity=".3" />
-        <path d="M194 56 C210 106 290 106 306 56 L299 58 C286 95 214 95 201 58 Z" className="g-fill" fill={color.hex} /><path d="M194 56 C210 106 290 106 306 56 L299 58 C286 95 214 95 201 58 Z" fill="#000" opacity=".12" />
-      </>}
-      {garment === 'tee' && view === 'back' && <path d="M194 56 C212 78 288 78 306 56 L300 60 C285 71 215 71 200 60 Z" fill="#000" opacity=".16" />}
-      {garment === 'tee' && <g fill="none" stroke={line} strokeWidth="1.4">
-        <path d="M128 80 Q122 150 118 208" /><path d="M372 80 Q378 150 382 208" />
-        <path d="M80 216 L119 196" strokeDasharray="3 3" /><path d="M420 216 L381 196" strokeDasharray="3 3" />
-        <path d="M118 510 Q250 522 382 510" strokeDasharray="3 3" />
-        <path d="M170 300 Q182 400 166 500" opacity=".5" /><path d="M332 286 Q320 390 338 500" opacity=".5" />
-      </g>}
-      {garment === 'hoodie' && <>
-        <g fill="#000" opacity=".14"><path d="M38 446 L87 456 L84 480 L36 470 Z" /><path d="M462 446 L413 456 L416 480 L464 470 Z" /><path d="M108 488 Q250 498 392 488 L392 522 Q250 532 108 522 Z" /></g>
-        <g fill="none" stroke={line} strokeWidth="1.4">
-          <path d="M128 104 Q140 190 104 262" /><path d="M372 104 Q360 190 396 262" />
-          {view === 'front' && <path d="M150 372 Q250 366 350 372 L376 470 Q250 476 124 470 Z" />}
-          {view === 'back' && <path d="M250 40 L250 106" />}
-        </g>
-        {view === 'front' && <>
-          <path d="M150 372 Q250 366 350 372 L376 470 Q250 476 124 470 Z" fill="#000" opacity=".06" />
-          <path d="M194 102 C200 60 300 60 306 102 C292 130 208 130 194 102 Z" fill="#000" opacity=".42" />
-          <path d="M190 96 C196 120 222 146 252 156 L250 168 C214 156 188 128 182 100 Z" className="g-fill" fill={color.hex} /><path d="M190 96 C196 120 222 146 252 156 L250 168 C214 156 188 128 182 100 Z" fill="#000" opacity=".1" />
-          <path d="M310 96 C304 120 278 146 248 156 L250 168 C286 156 312 128 318 100 Z" className="g-fill" fill={color.hex} /><path d="M310 96 C304 120 278 146 248 156 L250 168 C286 156 312 128 318 100 Z" fill="#fff" opacity=".05" />
-          <g stroke={color.dark ? '#E9E2D6' : '#2a2522'} strokeWidth="3.2" strokeLinecap="round"><path d="M232 152 L227 232" /><path d="M268 152 L273 232" /></g>
-          <g fill={color.dark ? '#E9E2D6' : '#2a2522'}><rect x="223.5" y="230" width="7" height="13" rx="2" /><rect x="269.5" y="230" width="7" height="13" rx="2" /></g>
-        </>}
-      </>}
-      {view === 'front' ? chest(shape.chestX[side], shape.chestTop) : back()}
-    </g>
+  function lockupBackTee(cx: number, top: number, lw: number) {
+    const lh = (lw * LANTERN.h) / LANTERN.w;
+    return { bottom: top + lw * 0.943, el: <>
+      {glowAt(cx, top + lh * 0.62, lw * 0.4)}
+      <image href={LANTERN.src} x={cx - lw / 2} y={top} width={lw} height={lh} />
+      <text x={cx} y={top + lw * 0.943} textAnchor="middle" fontFamily="'Bebas Neue', Impact, sans-serif" fontSize={lw * 0.36} letterSpacing={lw * 0.012} fill={ink}>ALÁTÙPÀ</text>
+    </> };
+  }
+
+  return <svg className={`garment ${className}`} viewBox="0 0 500 625" role="img" aria-label={title ?? `${color.name} ${isTee ? 'T-shirt' : 'hoodie'}, ${view} view`}>
+    <defs><radialGradient id={`glow-${id}`}><stop offset="0" stopColor="#FFB347" stopOpacity=".5" /><stop offset="1" stopColor="#FFB347" stopOpacity="0" /></radialGradient></defs>
+    <rect width="500" height="625" fill="#EDE5DA" />
+    <image key={photo} className="g-photo" href={photo} x="0" y="0" width="500" height="625" preserveAspectRatio="xMidYMid slice" />
+    <g className="g-print" style={blend} opacity={0.97}>{view === 'front' ? front() : back()}</g>
   </svg>;
 }

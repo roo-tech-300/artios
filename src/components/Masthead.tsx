@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import useScrollPosition from '../hooks/useScrollPosition';
 import { useCart } from '../context/CartContext';
-import products from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import { formatPrice } from '../lib/format';
 import BagDrawer from './BagDrawer';
 import Monogram from './Monogram';
@@ -18,6 +18,7 @@ const links = [
 
 export default function Masthead() {
   const scrolled = useScrollPosition();
+  const products = useProducts();
   const { pathname } = useLocation();
   const [bagOpen, setBagOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,7 +31,7 @@ export default function Masthead() {
     const term = query.trim().toLocaleLowerCase();
     if (!term) return [];
     return products.filter(p => [p.name, p.description, p.category, ...Object.values(p.details)].join(' ').toLocaleLowerCase().includes(term));
-  }, [query]);
+  }, [query, products]);
 
   useEffect(() => { setMenuOpen(false); }, [pathname]);
   useEffect(() => { if (lastAdded) setBagOpen(true); }, [lastAdded]);

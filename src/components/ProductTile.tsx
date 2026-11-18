@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Product } from '../data/products';
 import { findColor } from '../data/products';
-import { phrases } from '../brand';
 import { formatPrice } from '../lib/format';
 import GarmentPreview from './GarmentPreview';
 
@@ -24,7 +23,7 @@ export default function ProductTile({ product, index = 0 }: { product: Product; 
           : <img className="tile-img" src={product.image} alt={product.name} loading="lazy" />}
         {product.lifestyle
           ? <img className="tile-img tile-alt" src={product.lifestyle} alt="" loading="lazy" aria-hidden="true" />
-          : product.garment && color && <GarmentPreview className="tile-img tile-alt" garment={product.garment} color={color} view="back" phrase={phrases[4]} placement="back" />}
+          : product.garment && color && <GarmentPreview className="tile-img tile-alt" garment={product.garment} color={color} view="back" />}
         <span className="tile-cta">{product.garment ? 'Customise' : 'View'}</span>
       </div>
       <div className="tile-info"><h3>{product.name}</h3><span>{formatPrice(product.price)}</span></div>

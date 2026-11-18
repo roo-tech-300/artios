@@ -3,13 +3,16 @@ import { useSearchParams } from 'react-router-dom';
 import { LayoutGroup, motion } from 'framer-motion';
 import Eyebrow from '../components/Eyebrow';
 import ProductTile from '../components/ProductTile';
-import products, { categories } from '../data/products';
+import { categories } from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import { collectionName } from '../brand';
 
 type Sort = 'featured' | 'low' | 'high';
 
 export default function Collection() {
   const [params, setParams] = useSearchParams();
+  const products = useProducts();
+  const chips = [...categories, ...[...new Set(products.map(p => p.category))].filter(c => !categories.some(k => k.id === c)).map(c => ({ id: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))];
   const cat = params.get('category') ?? 'all';
   const sort = (params.get('sort') as Sort) ?? 'featured';
   const list = useMemo(() => {
@@ -17,7 +20,7 @@ export default function Collection() {
     if (sort === 'low') return [...filtered].sort((a, b) => a.price - b.price);
     if (sort === 'high') return [...filtered].sort((a, b) => b.price - a.price);
     return filtered;
-  }, [cat, sort]);
+  }, [cat, sort, products]);
   const set = (key: string, value: string) => { const next = new URLSearchParams(params); if (value === 'all' || value === 'featured') next.delete(key); else next.set(key, value); setParams(next, { replace: true }); };
 
   return <>
@@ -32,7 +35,7 @@ export default function Collection() {
       <div className="shop-bar">
         <LayoutGroup>
           <div className="chips" role="tablist" aria-label="Filter by category">
-            {categories.map(c => <button key={c.id} role="tab" aria-selected={cat === c.id} className={cat === c.id ? 'is-active' : ''} onClick={() => set('category', c.id)}>
+            {chips.map(c => <button key={c.id} role="tab" aria-selected={cat === c.id} className={cat === c.id ? 'is-active' : ''} onClick={() => set('category', c.id)}>
               {cat === c.id && <motion.span layoutId="chip" className="chip-bg" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />}
               <span className="chip-label">{c.label}</span>
             </button>)}

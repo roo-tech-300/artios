@@ -5,7 +5,7 @@ import Eyebrow from '../components/Eyebrow';
 import ProductTile from '../components/ProductTile';
 import Configurator from '../components/Configurator';
 import StickyBuy from '../components/StickyBuy';
-import products from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import type { Product } from '../data/products';
 import { formatPrice } from '../lib/format';
 import { useCart } from '../context/CartContext';
@@ -61,10 +61,11 @@ function SimpleProduct({ product }: { product: Product }) {
 export default function ProductPage() {
   const { slug } = useParams();
   const [params] = useSearchParams();
+  const products = useProducts();
   const product = products.find(item => item.slug === slug);
   if (!product) return <div className="not-found"><p>This item could not be found.</p><Link to="/collections/all">Shop all</Link></div>;
   const related = products.filter(item => item.id !== product.id && (item.category === product.category || item.featured)).slice(0, 4);
-  const photos = [product.image, product.lifestyle].filter(Boolean) as string[];
+  const photos = [...new Set([product.image, product.lifestyle, ...(product.gallery ?? [])].filter(Boolean) as string[])];
 
   return <>
     <div className="breadcrumbs pdp-crumbs"><Link to="/">Home</Link><span>/</span><Link to="/collections/all">Shop</Link><span>/</span><span>{product.name}</span></div>

@@ -2,13 +2,14 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Eyebrow from '../components/Eyebrow';
 import Configurator from '../components/Configurator';
-import products from '../data/products';
+import { useProducts } from '../context/ProductsContext';
 import { formatPrice } from '../lib/format';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export default function Studio() {
   const [params, setParams] = useSearchParams();
+  const products = useProducts();
   const apparel = products.filter(p => p.garment);
   const item = apparel.find(p => p.garment === params.get('item')) ?? apparel[0];
 
