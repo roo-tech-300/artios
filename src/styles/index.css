@@ -81,3 +81,15 @@
 .search-result span:last-child { color: var(--stone); text-align: right; white-space: nowrap; }
 .search-all-link { display: inline-block; margin-top: 17px; border-bottom: 1px solid; padding-bottom: 5px; font: 500 .58rem 'Inter',sans-serif; letter-spacing: .09em; text-transform: uppercase; }
 @media (max-width: 767px) { .search-scrim { inset: 72px 0 0; padding: 0; } .search-panel { width: 100%; max-height: 100%; padding: 20px 18px 25px; } .search-result { grid-template-columns: 48px minmax(0,1fr) auto; gap: 10px; } .search-result img { width: 48px; height: 52px; } .search-result span { font-size: .55rem; } .search-button { display: grid; } }
+
+/* Logo mark */
+.wordmark{display:inline-flex;align-items:center;gap:10px}.wordmark-mark{width:22px;height:31px;flex:none}.footer-wordmark{display:inline-flex;align-items:center;gap:12px}.footer-mark{width:26px;height:36px;flex:none}
+/* Size picker */
+.size-picker{border:0;padding:0;margin:26px 0 0}.size-picker legend{font:500 .58rem 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--stone);padding:0;margin-bottom:12px}.size-picker>div{display:flex;flex-wrap:wrap;gap:8px}.size-picker button{min-width:50px;height:44px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 .66rem 'Inter',sans-serif;letter-spacing:.06em;cursor:pointer;transition:border-color 300ms var(--ease),background 300ms var(--ease),color 300ms var(--ease)}.size-picker button:hover{border-color:var(--ink)}.size-picker button.is-active{background:var(--ink);border-color:var(--ink);color:var(--paper)}.size-error{font:500 .62rem 'Inter',sans-serif;color:var(--burgundy);margin:10px 0 0}
+/* Checkout */
+.summary-note{font:400 .95rem 'Cormorant Garamond',serif;color:var(--stone);margin:10px 0 0}.whatsapp-button{margin:8px 0 28px}
+.confirmation .outline-button{text-align:center}
+/* Footer */
+.footer-address{font:400 .67rem/1.7 'Inter',sans-serif;letter-spacing:.035em;color:#e3ddd5;margin:0;max-width:220px}.newsletter-title{font:400 1.4rem 'Cormorant Garamond',serif;margin:0 0 15px}.footer-whatsapp{color:var(--paper)}.footer-whatsapp span{color:var(--gold)}
+@media (max-width:767px){.wordmark{gap:8px}.wordmark-mark{width:18px;height:26px}.size-picker button{min-width:56px;height:48px}}
+@media (max-width:420px){.wordmark-mark{display:none}}

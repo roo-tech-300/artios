@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import products from '../data/products';
 import { formatPrice } from '../lib/format';
 import BagDrawer from './BagDrawer';
+import Monogram from './Monogram';
 
 export default function Masthead() {
   const scrolled = useScrollPosition();
@@ -36,7 +37,7 @@ export default function Masthead() {
 
   return <>
     <header className={`masthead ${!heroHeader || scrolled ? 'masthead-paper' : ''}`}>
-      <Link className="wordmark" to="/">Artios Fashion House</Link>
+      <Link className="wordmark" to="/" aria-label="Artios Fashion House home"><Monogram className="wordmark-mark" /><span>Artios Fashion House</span></Link>
       <nav className={menuOpen ? 'nav-open' : ''} aria-label="Main navigation">
         <Link to="/collections/all" onClick={() => setMenuOpen(false)}>Shop all</Link>
         <a href="/#maison" onClick={() => setMenuOpen(false)}>About</a>
