@@ -2,7 +2,8 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import Eyebrow from '../components/Eyebrow';
-import { useCart } from '../context/CartContext';
+import { describeOptions, useCart } from '../context/CartContext';
+import ProductMedia from '../components/ProductMedia';
 import { formatPrice } from '../lib/format';
 import { store, whatsappLink } from '../config';
 
@@ -20,7 +21,7 @@ export default function Checkout() {
     const field = (name: string) => String(values.get(name) ?? '').trim();
     const number = `AF-${Date.now().toString(36).slice(-4).toUpperCase()}${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
     const total = subtotal();
-    const lines = items.map(({ product, quantity, size }) => `• ${product.name}${size ? ` (Size ${size})` : ''} × ${quantity} — ${formatPrice(product.price * quantity)}`);
+    const lines = items.flatMap(({ product, quantity, options }) => { const opts = describeOptions(options); return [`• ${product.name} × ${quantity} — ${formatPrice(product.price * quantity)}`, ...(opts.length ? [`   ${opts.join(" · ")}`] : [])]; });
     const note = field('note');
     const message = [
       `Hello Artios, I'd like to place an order.`,
@@ -90,11 +91,11 @@ export default function Checkout() {
           </div>
           <p className="receipt-contact">Need help? <a href={whatsappLink()} target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a> · <a href={store.phoneHref}>{store.phoneDisplay}</a></p>
         </section>
-        <button type="submit" className="outline-button place-order">Send order on WhatsApp</button>
+        <button type="submit" className="solid-button place-order">Send order on WhatsApp</button>
       </div>
       <aside className="order-summary">
         <h2>Your items</h2>
-        {items.map(({ key, product, quantity, size }) => <div key={key} className="order-line"><img src={product.images[0]} alt="" /><div><span>{product.name}</span><small>{size ? `Size ${size} · ` : ''}Quantity {quantity}</small></div><span>{formatPrice(product.price * quantity)}</span></div>)}
+        {items.map(({ key, product, quantity, options }) => <div key={key} className="order-line"><ProductMedia product={product} options={options} className="line-media" /><div><span>{product.name}</span><small>{[...describeOptions(options), `Qty ${quantity}`].join(" · ")}</small></div><span>{formatPrice(product.price * quantity)}</span></div>)}
         <div className="subtotal"><span>Total</span><strong>{formatPrice(subtotal())}</strong></div>
         <p className="summary-note">Plus delivery, confirmed on WhatsApp.</p>
       </aside>

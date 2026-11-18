@@ -10,7 +10,7 @@ export default function Footer() {
         <Link to="/" className="footer-wordmark"><Monogram className="footer-mark" />Artios Fashion House</Link>
         <p>Everyday essentials, thoughtfully made.</p>
       </div>
-      <div><Eyebrow>Shop</Eyebrow><Link to="/collections/all">Shop all</Link><Link to="/#maison">Our story</Link><Link to="/bag">Your bag</Link></div>
+      <div><Eyebrow>Shop</Eyebrow><Link to="/collections/all">Shop all</Link><Link to="/studio">Design studio</Link><Link to="/#story">Our story</Link><Link to="/bag">Your bag</Link></div>
       <div><Eyebrow>Client services</Eyebrow><a href={whatsappLink()} target="_blank" rel="noopener noreferrer">WhatsApp us</a><a href={store.phoneHref}>{store.phoneDisplay}</a><a href={`mailto:${store.email}`}>{store.email}</a></div>
       <div><Eyebrow>Visit</Eyebrow><p className="footer-address">{store.address}</p></div>
     </div>

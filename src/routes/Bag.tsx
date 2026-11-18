@@ -1,6 +1,32 @@
 import { Link } from 'react-router-dom';
 import Eyebrow from '../components/Eyebrow';
 import QuantityStepper from '../components/QuantityStepper';
-import { useCart } from '../context/CartContext';
+import ProductMedia from '../components/ProductMedia';
+import { describeOptions, useCart } from '../context/CartContext';
 import { formatPrice } from '../lib/format';
-export default function Bag() { const { items, removeItem, updateQty, subtotal } = useCart(); return <section className="bag-page section-wrap"><div className="page-heading"><Eyebrow>Artios Fashion House</Eyebrow><h1>Your bag</h1></div>{items.length ? <div className="bag-layout"><div className="bag-page-lines">{items.map(({ key, product, quantity, size }) => <article className="bag-page-line" key={key}><Link to={`/products/${product.slug}`}><img src={product.images[0]} alt={product.name} /></Link><div><Link className="bag-item-name" to={`/products/${product.slug}`}>{product.name}</Link><p className="product-price">{size ? `Size ${size} · ` : ''}{formatPrice(product.price)}</p><QuantityStepper quantity={quantity} onChange={qty => updateQty(key, qty)} /><button className="text-link remove-link" onClick={() => removeItem(key)}>Remove</button></div><span className="line-total">{formatPrice(product.price * quantity)}</span></article>)}</div><aside className="bag-summary"><div className="subtotal"><span>Subtotal</span><strong>{formatPrice(subtotal())}</strong></div><p>Delivery fee is confirmed with you on WhatsApp after you order.</p><Link to="/checkout" className="outline-button full-button">Proceed to Checkout</Link><Link className="continue-shopping" to="/collections/all">Continue shopping</Link></aside></div> : <div className="empty-bag page-empty"><p>Your bag is empty.</p><Link to="/collections/all" className="text-link">Shop all <span>↗</span></Link></div>}</section>; }
+
+export default function Bag() {
+  const { items, removeItem, updateQty, subtotal } = useCart();
+  return <section className="bag-page section-wrap">
+    <div className="page-heading"><Eyebrow>Artios Fashion House</Eyebrow><h1>Your bag</h1></div>
+    {items.length ? <div className="bag-layout">
+      <div className="bag-page-lines">{items.map(({ key, product, quantity, options }) => <article className="bag-page-line" key={key}>
+        <Link to={`/products/${product.slug}`}><ProductMedia product={product} options={options} className="line-media" /></Link>
+        <div>
+          <Link className="bag-item-name" to={`/products/${product.slug}`}>{product.name}</Link>
+          <p className="product-price">{formatPrice(product.price)}</p>
+          {describeOptions(options).length > 0 && <ul className="line-opts">{describeOptions(options).map(o => <li key={o}>{o}</li>)}</ul>}
+          <QuantityStepper quantity={quantity} onChange={qty => updateQty(key, qty)} />
+          <button className="text-link remove-link" onClick={() => removeItem(key)}>Remove</button>
+        </div>
+        <span className="line-total">{formatPrice(product.price * quantity)}</span>
+      </article>)}</div>
+      <aside className="bag-summary">
+        <div className="subtotal"><span>Subtotal</span><strong>{formatPrice(subtotal())}</strong></div>
+        <p>Delivery fee is confirmed with you on WhatsApp after you order.</p>
+        <Link to="/checkout" className="solid-button full-button">Checkout</Link>
+        <Link className="continue-shopping" to="/collections/all">Continue shopping</Link>
+      </aside>
+    </div> : <div className="empty-bag page-empty"><p>Your bag is empty.</p><Link to="/collections/all" className="text-link">Shop all <span>↗</span></Link></div>}
+  </section>;
+}
