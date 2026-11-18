@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { formatPrice } from '../lib/format';
 import { store, whatsappLink } from '../config';
 
-type PlacedOrder = { number: string; total: number; link: string };
+type PlacedOrder = { number: string; total: number; link: string; message: string };
 
 export default function Checkout() {
   const { items, subtotal, clearCart } = useCart();
@@ -39,7 +39,7 @@ export default function Checkout() {
     ].filter(line => line !== null).join('\n');
     const link = whatsappLink(message);
     window.open(link, '_blank', 'noopener');
-    setOrder({ number, total, link });
+    setOrder({ number, total, link, message });
     clearCart();
     window.scrollTo(0, 0);
   }
@@ -53,7 +53,7 @@ export default function Checkout() {
     <a className="outline-button whatsapp-button" href={order.link} target="_blank" rel="noopener noreferrer">WhatsApp didn’t open? Tap here</a>
     <div className="checkout-contact-links">
       <a className="text-link" href={store.phoneHref}>Call {store.phoneDisplay} <span>↗</span></a>
-      <a className="text-link" href={`mailto:${store.email}?subject=${encodeURIComponent(`Order ${order.number}`)}`}>Email instead <span>↗</span></a>
+      <a className="text-link" href={`mailto:${store.email}?subject=${encodeURIComponent(`Order ${order.number}`)}&body=${encodeURIComponent(order.message.replace(/*/g, '').replace("in this chat", "attached to this email"))}`}>Email the order instead <span>↗</span></a>
     </div>
   </section>;
 
