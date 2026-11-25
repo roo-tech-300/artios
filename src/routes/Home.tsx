@@ -3,14 +3,17 @@ import type { PointerEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
-import { MessageCircle, Truck, Scissors, Landmark, ArrowDown } from 'lucide-react';
+import { MessageCircle, Truck, Scissors, Landmark, ArrowDown, Plus } from 'lucide-react';
 import Eyebrow from '../components/Eyebrow';
 import ProductTile from '../components/ProductTile';
 import Marquee from '../components/Marquee';
 import GarmentPreview from '../components/GarmentPreview';
+import EventBand from '../components/EventBand';
 import { apparelColors } from '../data/products';
 import { useProducts } from '../context/ProductsContext';
 import { tagline, collectionName, marqueeLines, meaning, phrases } from '../brand';
+import { store, whatsappLink } from '../config';
+import useTitle from '../hooks/useTitle';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -53,8 +56,8 @@ function Hero() {
 function Categories() {
   const cards = [
     { label: 'Apparel', sub: 'Tees & hoodies, made to order', to: '/collections/all?category=apparel', media: <GarmentPreview garment="tee" color={apparelColors[2]} phrase={phrases[3]} /> },
-    { label: 'Drinkware', sub: 'Flasks, tumblers & mugs', to: '/collections/all?category=drinkware', media: <img src="/assets/studio/thermo-flask.webp" alt="" loading="lazy" /> },
-    { label: 'Bags & paper', sub: 'Totes & notepads', to: '/collections/all?category=bags', media: <img src="/assets/studio/artios-totebag.webp" alt="" loading="lazy" /> },
+    { label: 'Drinkware', sub: 'Flasks, tumblers & mugs', to: '/collections/all?category=drinkware', media: <img src="/assets/lifestyle/thermo-flask.webp" alt="" loading="lazy" /> },
+    { label: 'Bags & paper', sub: 'Totes & notepads', to: '/collections/all?category=bags', media: <img src="/assets/lifestyle/artios-notepad.webp" alt="" loading="lazy" /> },
   ];
   return <section className="cats section-wrap">
     {cards.map((c, i) => <motion.div key={c.label} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.9, delay: i * 0.1, ease }}>
@@ -120,12 +123,45 @@ function Editorial() {
   </section>;
 }
 
+const steps = [
+  { n: '01', t: 'Choose or design', s: 'Pick a piece, or open the studio and choose your colour, words and logo placement.' },
+  { n: '02', t: 'Check out and transfer', s: 'Add your delivery details and transfer the total to our account, shown at checkout.' },
+  { n: '03', t: 'Send it on WhatsApp', s: 'Your full order opens in WhatsApp. Send it with your receipt and we confirm, make and deliver.' },
+];
+
+function HowItWorks() {
+  return <section className="how section-wrap" aria-labelledby="how-title">
+    <div className="block-head"><div><Eyebrow>Ordering is simple</Eyebrow><h2 id="how-title">From your bag to your door</h2></div><a className="text-link" href={whatsappLink('Hello Artios, I would like help with an order.')} target="_blank" rel="noopener noreferrer">Ask us anything <span>↗</span></a></div>
+    <ol className="how-steps">{steps.map((st, i) => <motion.li key={st.n} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.8, delay: i * 0.1, ease }}>
+      <span className="how-n">{st.n}</span><h3>{st.t}</h3><p>{st.s}</p>
+    </motion.li>)}</ol>
+  </section>;
+}
+
+const faqs = [
+  { q: 'How do I place an order?', a: 'Add your pieces to the bag and go to checkout. Fill in your delivery details, transfer the total to our account, then send the order on WhatsApp with your receipt. We confirm everything with you in that chat.' },
+  { q: 'Can I customise my T-shirt or hoodie?', a: 'Yes. Choose from five colours and five catch phrases, put the Artios mark on the left, centre or right, and place your phrase under the logo or large on the back. Anything else, write it in the note at checkout.' },
+  { q: 'Do you deliver outside Minna?', a: 'We deliver across Nigeria. The delivery fee depends on where you are, and we confirm it with you on WhatsApp before your order is sent out.' },
+  { q: 'How long will my order take?', a: 'Apparel is made to order, so timing depends on your piece and quantity. We give you a date when we confirm your payment.' },
+  { q: 'Which size should I choose?', a: 'Every T-shirt and hoodie page has a size guide. If you are between sizes, take the larger one, or message us and we will help you choose.' },
+  { q: 'Can I visit you?', a: `Our studio is at ${store.address}. Send us a message on WhatsApp to arrange a visit.` },
+];
+
+function Faq() {
+  return <section className="faq section-wrap" aria-labelledby="faq-title">
+    <div className="faq-head"><Eyebrow>Good to know</Eyebrow><h2 id="faq-title">Questions, answered</h2><p>Still wondering? <a href={whatsappLink('Hello Artios, I have a question.')} target="_blank" rel="noopener noreferrer">Chat with us on WhatsApp</a> or call {store.phoneDisplay}.</p></div>
+    <div className="faq-list">{faqs.map(f => <details key={f.q} className="faq-item"><summary>{f.q}<Plus size={18} strokeWidth={1.3} /></summary><p>{f.a}</p></details>)}</div>
+  </section>;
+}
+
 export default function Home() {
+  useTitle();
   const products = useProducts();
   const featured = products.filter(p => p.featured).slice(0, 4);
   return <>
     <Hero />
     <Marquee items={marqueeLines} />
+    <EventBand />
     <section className="section-wrap home-collection" id="collection">
       <div className="block-head"><div><Eyebrow>{collectionName}</Eyebrow><h2>Pieces of permanence</h2></div><Link to="/collections/all" className="text-link">Shop all <span>↗</span></Link></div>
       <div className="grid-products">{featured.map((p, i) => <ProductTile key={p.id} product={p} index={i} />)}</div>
@@ -134,6 +170,8 @@ export default function Home() {
     <StudioTeaser />
     <Manifesto />
     <Editorial />
+    <HowItWorks />
+    <Faq />
     <section className="trust section-wrap">
       {[{ icon: MessageCircle, t: 'Order on WhatsApp', s: 'Real people, quick replies' }, { icon: Truck, t: 'Delivery nationwide', s: 'Fee confirmed before dispatch' }, { icon: Scissors, t: 'Made to order', s: 'Your colour, your words' }, { icon: Landmark, t: 'Pay by transfer', s: 'Simple and secure' }].map(({ icon: Icon, t, s }, n) =>
         <motion.div key={t} className="trust-item" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: n * 0.08, ease }}><Icon size={22} strokeWidth={1.2} /><div><strong>{t}</strong><span>{s}</span></div></motion.div>)}

@@ -6,12 +6,14 @@ import { describeOptions, useCart } from '../context/CartContext';
 import ProductMedia from '../components/ProductMedia';
 import { formatPrice } from '../lib/format';
 import { store, whatsappLink } from '../config';
+import useTitle from '../hooks/useTitle';
 
 type PlacedOrder = { number: string; total: number; link: string; message: string };
 
 export default function Checkout() {
   const { items, subtotal, clearCart } = useCart();
   const [order, setOrder] = useState<PlacedOrder | null>(null);
+  useTitle('Checkout');
 
   function submitOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

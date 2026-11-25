@@ -10,5 +10,10 @@ export const store = {
   bank: { accountName: 'Artios Fashion House', accountNumber: '6578266670', bankName: 'Moniepoint MFB' },
 };
 
+// Social profiles shown in the footer.
+export const socials = {
+  instagram: { handle: '@artios_fashion_house', url: 'https://www.instagram.com/artios_fashion_house/' },
+};
+
 export const whatsappLink = (message?: string) =>
   `https://wa.me/${store.whatsapp}${message ? `?text=${encodeURIComponent(message)}` : ''}`;

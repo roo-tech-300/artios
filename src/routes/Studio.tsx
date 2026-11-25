@@ -4,12 +4,14 @@ import Eyebrow from '../components/Eyebrow';
 import Configurator from '../components/Configurator';
 import { useProducts } from '../context/ProductsContext';
 import { formatPrice } from '../lib/format';
+import useTitle from '../hooks/useTitle';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export default function Studio() {
   const [params, setParams] = useSearchParams();
   const products = useProducts();
+  useTitle('Design studio');
   const apparel = products.filter(p => p.garment);
   const item = apparel.find(p => p.garment === params.get('item')) ?? apparel[0];
 

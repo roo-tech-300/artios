@@ -6,6 +6,7 @@ import ProductTile from '../components/ProductTile';
 import { categories } from '../data/products';
 import { useProducts } from '../context/ProductsContext';
 import { collectionName } from '../brand';
+import useTitle from '../hooks/useTitle';
 
 type Sort = 'featured' | 'low' | 'high';
 
@@ -14,6 +15,7 @@ export default function Collection() {
   const products = useProducts();
   const chips = [...categories, ...[...new Set(products.map(p => p.category))].filter(c => !categories.some(k => k.id === c)).map(c => ({ id: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))];
   const cat = params.get('category') ?? 'all';
+  useTitle(cat === 'all' ? 'Shop all' : `Shop ${cat}`);
   const sort = (params.get('sort') as Sort) ?? 'featured';
   const list = useMemo(() => {
     const filtered = products.filter(p => cat === 'all' || p.category === cat);

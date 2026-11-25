@@ -10,6 +10,7 @@ import type { Product } from '../data/products';
 import { formatPrice } from '../lib/format';
 import { useCart } from '../context/CartContext';
 import { store, whatsappLink } from '../config';
+import useTitle from '../hooks/useTitle';
 
 function Info({ product }: { product: Product }) {
   return <div className="pdp-accordion">
@@ -63,6 +64,7 @@ export default function ProductPage() {
   const [params] = useSearchParams();
   const products = useProducts();
   const product = products.find(item => item.slug === slug);
+  useTitle(product?.name ?? 'Not found');
   if (!product) return <div className="not-found"><p>This item could not be found.</p><Link to="/collections/all">Shop all</Link></div>;
   const related = products.filter(item => item.id !== product.id && (item.category === product.category || item.featured)).slice(0, 4);
   const photos = [...new Set([product.image, product.lifestyle, ...(product.gallery ?? [])].filter(Boolean) as string[])];
