@@ -39,6 +39,14 @@ export default function Checkout() {
       `I have paid ${formatPrice(total)} by bank transfer to ${store.bank.bankName} ${store.bank.accountNumber}. I'm sending my receipt in this chat.`,
     ].filter(line => line !== null).join('\n');
     const link = whatsappLink(message);
+    // Keep a copy of the order in the admin. Never blocks the WhatsApp step.
+    try {
+      void fetch('/api/orders', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        number,
+        items: items.map(({ product, quantity, options }) => ({ name: product.name, quantity, price: product.price, options: describeOptions(options) })),
+        customer: { name: field('name'), phone: field('phone'), email: field('email'), address: field('address'), city: field('city'), state: field('state'), note },
+      }) }).catch(() => {});
+    } catch { /* ignore */ }
     window.open(link, '_blank', 'noopener');
     setOrder({ number, total, link, message });
     clearCart();

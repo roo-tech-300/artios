@@ -1,7 +1,7 @@
 import base from '../data/products';
 import type { Product } from '../data/products';
 
-// Products managed in the admin (Supabase). Rows with `ref` edit a built-in product; others are new.
+// Products managed in the admin. Rows with `ref` edit a built-in product; others are new.
 export type RemoteRow = {
   id: string; ref: string | null; name: string | null; price: number | null; category: string | null;
   description: string | null; image_url: string | null; gallery: string[] | null; sizes: string[] | null;
@@ -9,14 +9,10 @@ export type RemoteRow = {
   featured: boolean | null; visible: boolean | null; sort: number | null; created_at: string;
 };
 
-export const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '');
-export const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-export const adminConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
-
+// Products added or edited in the admin come from the site's own server (Railway database).
 export async function fetchRows(): Promise<RemoteRow[]> {
-  if (!adminConfigured) return [];
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=sort.asc,created_at.asc`, { headers: { apikey: SUPABASE_KEY!, Authorization: `Bearer ${SUPABASE_KEY}` } });
-  if (!res.ok) throw new Error(`Catalogue request failed (${res.status})`);
+  const res = await fetch('/api/products', { headers: { Accept: 'application/json' } });
+  if (!res.ok || !(res.headers.get('content-type') || '').includes('application/json')) throw new Error(`Catalogue request failed (${res.status})`);
   return res.json();
 }
 
