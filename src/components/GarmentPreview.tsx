@@ -13,9 +13,9 @@ const STACKED = { dark: '/brand/artios-stacked-dark.svg', light: '/brand/artios-
 
 // Garment bounding boxes inside the 500 × 625 photo frame.
 const BOX = {
-  'tee-front': { x: 55.5, y: 56, w: 389, h: 500 },
-  'tee-back': { x: 53, y: 56, w: 394, h: 500 },
-  'hoodie-front': { x: 68.5, y: 56, w: 363, h: 512.5 },
+  'tee-front': { x: 51, y: 56, w: 397.5, h: 500 },
+  'tee-back': { x: 51, y: 56, w: 398, h: 500 },
+  'hoodie-front': { x: 68.5, y: 56, w: 362.5, h: 512.5 },
   'hoodie-back': { x: 70, y: 56, w: 359.5, h: 512.5 },
 };
 
@@ -43,6 +43,7 @@ export default function GarmentPreview({ garment, color, side = 'centre', phrase
   const stacked = color.dark ? STACKED.light : STACKED.dark;
   const blend = color.dark ? undefined : { mixBlendMode: 'multiply' as const };
   const photo = `/garments/${garment}-${view}-${slug(color.name)}.webp`;
+  const shade = `/garments/${garment}-${view}-shade.webp`;
   const frontPhrase = phrase && placement === 'front' ? phrase : undefined;
   const backPhrase = phrase && placement === 'back' ? phrase : undefined;
   const isTee = garment === 'tee';
@@ -118,9 +119,21 @@ export default function GarmentPreview({ garment, color, side = 'centre', phrase
   }
 
   return <svg className={`garment ${className}`} viewBox="0 0 500 625" role="img" aria-label={title ?? `${color.name} ${isTee ? 'T-shirt' : 'hoodie'}, ${view} view`}>
-    <defs><radialGradient id={`glow-${id}`}><stop offset="0" stopColor="#FFB347" stopOpacity=".5" /><stop offset="1" stopColor="#FFB347" stopOpacity="0" /></radialGradient></defs>
+    <defs>
+      <radialGradient id={`glow-${id}`}><stop offset="0" stopColor="#FFB347" stopOpacity=".5" /><stop offset="1" stopColor="#FFB347" stopOpacity="0" /></radialGradient>
+      {/* Makes the print sit in the fabric: follows the folds, picks up the garment's light and shadow, loses vector-sharp edges. */}
+      <filter id={`fab-${id}`} x="0" y="0" width="500" height="625" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+        <feImage href={shade} x="0" y="0" width="500" height="625" preserveAspectRatio="none" result="shade" />
+        <feGaussianBlur in="shade" stdDeviation="3" result="sblur" />
+        <feDisplacementMap in="SourceGraphic" in2="sblur" scale="5" xChannelSelector="R" yChannelSelector="R" result="warp" />
+        <feGaussianBlur in="warp" stdDeviation="0.35" result="soft" />
+        <feBlend in="shade" in2="soft" mode="soft-light" result="lit1" />
+        <feBlend in="shade" in2="lit1" mode="soft-light" result="lit" />
+        <feComposite in="lit" in2="soft" operator="in" />
+      </filter>
+    </defs>
     <rect width="500" height="625" fill="#EDE5DA" />
     <image key={photo} className="g-photo" href={photo} x="0" y="0" width="500" height="625" preserveAspectRatio="xMidYMid slice" />
-    <g className="g-print" style={blend} opacity={0.97}>{view === 'front' ? front() : back()}</g>
+    <g className="g-print" style={blend} opacity={color.dark ? 0.92 : 0.95} filter={`url(#fab-${id})`}>{view === 'front' ? front() : back()}</g>
   </svg>;
 }
