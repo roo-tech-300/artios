@@ -433,10 +433,21 @@ html, body { overflow-x: clip; }
 
 /* ---------- Alátùpà event band ---------- */
 .ev { position: relative; overflow: hidden; background: radial-gradient(120% 90% at 22% 55%, #2a1a0d 0%, var(--ink) 58%); color: var(--paper); display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: center; gap: 4vw; padding: clamp(80px, 10vw, 140px) 6vw; border-bottom: 1px solid rgba(201,166,107,.22); }
-.ev-glow { position: absolute; left: 12%; top: 50%; width: 520px; height: 520px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, rgba(255,176,72,.28), rgba(255,176,72,0) 65%); filter: blur(10px); animation: ev-flicker 5s ease-in-out infinite; pointer-events: none; }
+.ev-glow { position: absolute; left: 21%; top: 50%; width: 520px; height: 520px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, rgba(255,176,72,.28), rgba(255,176,72,0) 65%); filter: blur(10px); animation: ev-flicker 5s ease-in-out infinite; pointer-events: none; }
 @keyframes ev-flicker { 0%, 100% { opacity: .85; } 45% { opacity: 1; } 60% { opacity: .7; } }
-.ev-lantern { position: relative; margin: 0; justify-self: center; }
-.ev-lantern img { display: block; height: clamp(240px, 30vw, 380px); width: auto; filter: drop-shadow(0 30px 60px rgba(255,150,40,.25)); }
+.ev-card { position: relative; justify-self: center; width: clamp(230px, 24vw, 320px); aspect-ratio: 300 / 420; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 12%; text-align: center; }
+.ev-arch { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ev-arch path { fill: none; stroke: rgba(201,166,107,.75); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.ev-arch path + path { stroke: rgba(201,166,107,.3); }
+.ev-card::before { content: ''; position: absolute; inset: 3% 2% 1.5%; border-radius: 50% 50% 0 0 / 34% 34% 0 0; background: radial-gradient(70% 45% at 50% 30%, rgba(255,176,72,.22), rgba(255,176,72,0) 70%), linear-gradient(180deg, rgba(43,28,14,.55), rgba(14,11,10,.2)); }
+.ev-flame { position: absolute; top: 17%; left: 50%; width: 16px; height: 26px; transform: translateX(-50%); border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; background: radial-gradient(circle at 50% 70%, #fff3d6 0%, #ffc56b 38%, #e07a1c 75%, rgba(224,122,28,0) 100%); box-shadow: 0 0 30px 10px rgba(255,170,60,.35), 0 0 80px 30px rgba(255,150,40,.15); animation: ev-flame 2.8s ease-in-out infinite; }
+@keyframes ev-flame { 0%, 100% { transform: translateX(-50%) scale(1); } 40% { transform: translateX(-50%) scale(1.08, .95); } 70% { transform: translateX(-52%) scale(.95, 1.05); } }
+.ev-card > span { position: relative; }
+.ev-card-k { font: 500 .54rem 'Inter', sans-serif; letter-spacing: .38em; text-transform: uppercase; color: var(--gold-2); margin-bottom: 6px; }
+.ev-card-day { font: 400 clamp(5.5rem, 8vw, 7.6rem)/.9 'Cormorant Garamond', serif; color: var(--paper); }
+.ev-card-month { font: italic 400 clamp(1.5rem, 2.2vw, 2rem)/1 'Cormorant Garamond', serif; color: var(--gold-2); margin-top: 2px; }
+.ev-card-rule { width: 34px; height: 1px; background: rgba(201,166,107,.6); margin: 18px 0 14px; }
+.ev-card-meta { font: 500 .56rem/1.9 'Inter', sans-serif; letter-spacing: .26em; text-transform: uppercase; color: #cfc6ba; }
 .ev-copy { position: relative; max-width: 640px; }
 .ev-copy .eyebrow { color: var(--gold-2); }
 .ev h2 { font: 400 clamp(2.8rem, 5.6vw, 5.4rem)/.98 'Cormorant Garamond', serif; margin: 18px 0 20px; letter-spacing: -.01em; }
@@ -461,7 +472,11 @@ html, body { overflow-x: clip; }
 @media (max-width: 767px) {
   .ev { grid-template-columns: 1fr; padding: 72px 20px 80px; gap: 10px; text-align: left; }
   .ev-glow { left: 50%; top: 150px; width: 380px; height: 380px; }
-  .ev-lantern img { height: 210px; }
+  .ev-card { width: 220px; margin-bottom: 28px; padding-bottom: 11%; }
+  .ev-flame { top: 13%; width: 13px; height: 21px; }
+  .ev-card-day { font-size: 4.4rem; }
+  .ev-card-month { font-size: 1.35rem; }
+  .ev-card-rule { margin: 12px 0 10px; }
   .ev-count { max-width: none; }
   .ev-ctas a, .ev-ctas button { flex: 1 1 100%; }
 }
@@ -511,3 +526,19 @@ html, body { overflow-x: clip; }
   .hx-copy { text-shadow: 0 2px 24px rgba(14,11,10,.65); }
   .hx-bg::after { background: linear-gradient(180deg, rgba(14,11,10,.5) 0%, rgba(14,11,10,.25) 26%, rgba(14,11,10,.82) 52%, rgba(14,11,10,.96) 80%); }
 }
+
+/* ---------- Visual pass: calmer hero, rhythm, tighter spacing ---------- */
+.hx-bg { width: 62%; }
+.hx-bg img { animation: hx-drift 24s ease-in-out infinite alternate; transform-origin: 60% 40%; }
+@keyframes hx-drift { from { transform: scale(1.02); } to { transform: scale(1.09) translate(-1%, -1%); } }
+.hx-bg::after { background: linear-gradient(90deg, var(--ink) 0%, rgba(14,11,10,.7) 22%, rgba(14,11,10,.05) 58%), linear-gradient(0deg, rgba(14,11,10,.6), rgba(14,11,10,0) 38%); }
+.home-collection { padding-bottom: 110px; }
+.cats { padding: 110px 0 120px; }
+.how { padding-top: clamp(80px, 9vw, 120px); }
+.faq { padding-block: clamp(60px, 8vw, 110px) clamp(90px, 10vw, 140px); }
+@media (max-width: 767px) {
+  .hx-bg { width: 100%; }
+  .home-collection { padding-bottom: 72px; }
+  .cats { padding: 64px 0 80px; }
+}
+@media (prefers-reduced-motion: reduce) { .hx-bg img, .ev-flame, .ev-glow { animation: none; } }

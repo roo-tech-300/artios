@@ -3,7 +3,7 @@ import type { PointerEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
-import { MessageCircle, Truck, Scissors, Landmark, ArrowDown, Plus } from 'lucide-react';
+import { ArrowDown, Plus } from 'lucide-react';
 import Eyebrow from '../components/Eyebrow';
 import ProductTile from '../components/ProductTile';
 import Marquee from '../components/Marquee';
@@ -25,8 +25,6 @@ function Hero() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const yMain = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
-  const yA = useTransform(scrollYProgress, [0, 1], ['0%', '-40%']);
-  const yB = useTransform(scrollYProgress, [0, 1], ['0%', '-12%']);
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const move = (e: PointerEvent<HTMLElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -45,10 +43,6 @@ function Hero() {
         <Link to="/studio" className="ghost-button">Design your own</Link>
       </motion.div>
     </motion.div>
-    <div className="hx-collage" aria-hidden="true">
-      <motion.figure className="hx-card hx-card-a" style={{ y: yA }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.6, ease }}><img src="/assets/lifestyle/artios-totebag.webp" alt="" /></motion.figure>
-      <motion.figure className="hx-card hx-card-b" style={{ y: yB }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.8, ease }}><img src="/assets/lifestyle/artios-hoodie.webp" alt="" /></motion.figure>
-    </div>
     <motion.a href="#collection" className="hx-scroll" style={{ opacity: fade }}><ArrowDown size={14} strokeWidth={1.5} /> Scroll</motion.a>
   </section>;
 }
@@ -57,7 +51,7 @@ function Categories() {
   const cards = [
     { label: 'Apparel', sub: 'Tees & hoodies, made to order', to: '/collections/all?category=apparel', media: <GarmentPreview garment="tee" color={apparelColors[2]} phrase={phrases[3]} /> },
     { label: 'Drinkware', sub: 'Flasks, tumblers & mugs', to: '/collections/all?category=drinkware', media: <img src="/assets/lifestyle/thermo-flask.webp" alt="" loading="lazy" /> },
-    { label: 'Bags & paper', sub: 'Totes & notepads', to: '/collections/all?category=bags', media: <img src="/assets/lifestyle/artios-notepad.webp" alt="" loading="lazy" /> },
+    { label: 'Bags & paper', sub: 'Totes & notepads', to: '/collections/all?category=bags', media: <img src="/assets/studio/artios-notepad.webp" alt="" loading="lazy" /> },
   ];
   return <section className="cats section-wrap">
     {cards.map((c, i) => <motion.div key={c.label} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.25 }} transition={{ duration: 0.9, delay: i * 0.1, ease }}>
@@ -161,20 +155,16 @@ export default function Home() {
   return <>
     <Hero />
     <Marquee items={marqueeLines} />
-    <EventBand />
     <section className="section-wrap home-collection" id="collection">
       <div className="block-head"><div><Eyebrow>{collectionName}</Eyebrow><h2>Pieces of permanence</h2></div><Link to="/collections/all" className="text-link">Shop all <span>↗</span></Link></div>
       <div className="grid-products">{featured.map((p, i) => <ProductTile key={p.id} product={p} index={i} />)}</div>
     </section>
+    <EventBand />
     <Categories />
     <StudioTeaser />
-    <Manifesto />
     <Editorial />
+    <Manifesto />
     <HowItWorks />
     <Faq />
-    <section className="trust section-wrap">
-      {[{ icon: MessageCircle, t: 'Order on WhatsApp', s: 'Real people, quick replies' }, { icon: Truck, t: 'Delivery nationwide', s: 'Fee confirmed before dispatch' }, { icon: Scissors, t: 'Made to order', s: 'Your colour, your words' }, { icon: Landmark, t: 'Pay by transfer', s: 'Simple and secure' }].map(({ icon: Icon, t, s }, n) =>
-        <motion.div key={t} className="trust-item" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: n * 0.08, ease }}><Icon size={22} strokeWidth={1.2} /><div><strong>{t}</strong><span>{s}</span></div></motion.div>)}
-    </section>
   </>;
 }
