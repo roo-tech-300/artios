@@ -37,6 +37,8 @@ async function migrate() {
     create table if not exists orders (
       id uuid primary key, number text not null, customer jsonb not null, items jsonb not null, total integer not null,
       status text not null default 'new', created_at timestamptz default now());
+    alter table admins add column if not exists setup_token_hash text;
+    alter table admins add column if not exists setup_expires timestamptz;
   `);
   const owner = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
   const pass = process.env.ADMIN_PASSWORD || '';
@@ -217,15 +219,57 @@ api.patch('/orders/:id', needDb, wrap(needAdmin), wrap(async (req, res) => {
 // Staff (owner only)
 const ownerOnly = (req, res, next) => (req.admin?.is_owner ? next() : res.status(403).json({ error: 'Only the owner can manage staff.' }));
 api.get('/staff', needDb, wrap(needAdmin), ownerOnly, wrap(async (_req, res) => {
-  const { rows } = await pool.query('select email, is_owner, created_at from admins order by created_at');
+  const { rows } = await pool.query('select email, is_owner, created_at, (setup_token_hash is not null and setup_expires > now()) as pending from admins order by created_at');
   res.json(rows);
 }));
+// New staff (or a reset) get a one-time link to choose their own password. Nobody else ever sees it.
+const SETUP_DAYS = 7;
+async function issueSetupLink(req, email, makeOwner = null) {
+  const token = crypto.randomBytes(24).toString('base64url');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const unusable = hashPassword(crypto.randomBytes(32).toString('hex'));   // old password stops working
+  await pool.query(`insert into admins (email, password_hash, is_owner, setup_token_hash, setup_expires)
+      values ($1, $2, coalesce($3, false), $4, now() + interval '${SETUP_DAYS} days')
+      on conflict (email) do update set password_hash = excluded.password_hash, setup_token_hash = excluded.setup_token_hash, setup_expires = excluded.setup_expires`,
+    [email, unusable, makeOwner, tokenHash]);
+  const origin = `${req.protocol}://${req.get('host')}`;
+  return `${origin}/admin?setup=${token}`;
+}
+const validEmail = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 api.post('/staff', needDb, wrap(needAdmin), ownerOnly, wrap(async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!validEmail(email)) return res.status(400).json({ error: 'Enter a valid email.' });
+  const { rows } = await pool.query('select 1 from admins where email = $1', [email]);
+  if (rows.length) return res.status(409).json({ error: 'That email already has a login. Use "New setup link" instead.' });
+  res.status(201).json({ link: await issueSetupLink(req, email) });
+}));
+// Owner sends someone (including themselves) a fresh link to choose a new password.
+api.post('/staff/:email/link', needDb, wrap(needAdmin), ownerOnly, wrap(async (req, res) => {
+  const email = req.params.email.toLowerCase();
+  const { rows } = await pool.query('select is_owner from admins where email = $1', [email]);
+  if (!rows.length) return res.status(404).json({ error: 'No login for that email.' });
+  res.json({ link: await issueSetupLink(req, email) });
+}));
+// Public: who is this setup link for, and is it still valid?
+const findSetup = async token => {
+  if (!token || String(token).length > 100) return null;
+  const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+  const { rows } = await pool.query('select email from admins where setup_token_hash = $1 and setup_expires > now()', [tokenHash]);
+  return rows[0] || null;
+};
+api.get('/setup/:token', needDb, wrap(async (req, res) => {
+  const found = await findSetup(req.params.token);
+  found ? res.json({ email: found.email }) : res.status(404).json({ error: 'This link has expired or was already used. Ask the owner for a new one.' });
+}));
+api.post('/setup', needDb, wrap(async (req, res) => {
+  if (limited(`setup:${req.ip}`, 20, 15 * 60e3)) return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  const found = await findSetup(req.body?.token);
+  if (!found) return res.status(404).json({ error: 'This link has expired or was already used. Ask the owner for a new one.' });
   const password = String(req.body?.password || '');
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || password.length < 8) return res.status(400).json({ error: 'Enter a valid email and a password of at least 8 characters.' });
-  await pool.query('insert into admins (email, password_hash) values ($1, $2) on conflict (email) do update set password_hash = excluded.password_hash', [email, hashPassword(password)]);
-  res.status(201).json({ ok: true });
+  if (password.length < 8) return res.status(400).json({ error: 'Use at least 8 characters.' });
+  await pool.query('update admins set password_hash = $2, setup_token_hash = null, setup_expires = null where email = $1', [found.email, hashPassword(password)]);
+  setSession(res, makeToken(found.email), SESSION_DAYS * 86400);
+  res.json({ ok: true });
 }));
 api.delete('/staff/:email', needDb, wrap(needAdmin), ownerOnly, wrap(async (req, res) => {
   await pool.query('delete from admins where email = $1 and is_owner = false', [req.params.email.toLowerCase()]);

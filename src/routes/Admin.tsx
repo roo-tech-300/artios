@@ -8,7 +8,7 @@ import { formatPrice } from '../lib/format';
 
 type Me = { email: string; is_owner: boolean };
 type Order = { id: string; number: string; status: string; total: number; created_at: string; customer: Record<string, string | null>; items: { name: string; quantity: number; price: number; options: string[] }[] };
-type Staff = { email: string; is_owner: boolean; created_at: string };
+type Staff = { email: string; is_owner: boolean; created_at: string; pending: boolean };
 
 async function api<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`/api${path}`, { credentials: 'same-origin', ...init, headers: { ...(init.body && typeof init.body === 'string' ? { 'Content-Type': 'application/json' } : {}), ...init.headers } });
@@ -198,24 +198,53 @@ function Orders() {
   </>;
 }
 
+function LinkBox({ email, link, onClose }: { email: string; link: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const text = `Hi! Here is your Artios admin link. Open it to create your own password (it works once and expires in 7 days): ${link}`;
+  return <div className="admin-link">
+    <p><strong>Setup link for {email}</strong><br />Send it privately. They open it, choose their own password, and they are in. It works once and expires in 7 days.</p>
+    <input readOnly value={link} onFocus={e => e.currentTarget.select()} aria-label="Setup link" />
+    <div className="admin-link-actions">
+      <button type="button" className="solid-button small" onClick={async () => { try { await navigator.clipboard.writeText(link); setCopied(true); } catch { /* select manually */ } }}>{copied ? 'Copied' : 'Copy link'}</button>
+      <a className="ghost-dark" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer"><MessageCircle size={14} /> Send on WhatsApp</a>
+      <button type="button" className="ghost-dark" onClick={onClose}>Done</button>
+    </div>
+  </div>;
+}
+
 function Team({ me }: { me: Me }) {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
+  const [issued, setIssued] = useState<{ email: string; link: string } | null>(null);
   const [pw, setPw] = useState({ current: '', next: '' });
   const load = useCallback(async () => { if (me.is_owner) setStaff(await api<Staff[]>('/staff')); }, [me.is_owner]);
   useEffect(() => { void load(); }, [load]);
   const act = async (fn: () => Promise<unknown>, ok: string) => { try { await fn(); setMsg(ok); await load(); } catch (e) { setMsg((e as Error).message); } };
+  async function newLink(target: string) {
+    if (!window.confirm(`Send ${target} a new setup link? Their current password will stop working until they use it.`)) return;
+    try { const { link } = await post<{ link: string }>(`/staff/${encodeURIComponent(target)}/link`, {}); setIssued({ email: target, link }); setMsg(''); await load(); } catch (e) { setMsg((e as Error).message); }
+  }
+  async function add(e: FormEvent) {
+    e.preventDefault();
+    try { const { link } = await post<{ link: string }>('/staff', { email }); setIssued({ email: email.trim().toLowerCase(), link }); setEmail(''); setMsg(''); await load(); } catch (x) { setMsg((x as Error).message); }
+  }
   return <div className="admin-team">
     {me.is_owner && <section className="admin-card">
       <h2>Staff who can sign in</h2>
-      <ul className="admin-staff">{staff.map(s => <li key={s.email}><span>{s.email}{s.is_owner ? ' (owner)' : ''}</span>{!s.is_owner && <button className="admin-danger" onClick={() => window.confirm(`Remove ${s.email}?`) && act(() => api(`/staff/${encodeURIComponent(s.email)}`, { method: 'DELETE' }), 'Removed.')}>Remove</button>}</li>)}</ul>
-      <form className="admin-signin" onSubmit={e => { e.preventDefault(); void act(() => post('/staff', { email, password }), `${email} can now sign in. Send them the password privately.`).then(() => { setEmail(''); setPassword(''); }); }}>
-        <label>New staff email<input type="email" required value={email} onChange={e => setEmail(e.target.value)} /></label>
-        <label>Their password (8+ characters)<input type="text" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} /></label>
-        <button className="solid-button">Add staff</button>
-      </form>
+      <ul className="admin-staff">{staff.map(s => <li key={s.email}>
+        <span>{s.email}{s.is_owner ? ' (owner)' : ''}{s.pending ? <em className="admin-pending"> · waiting to set password</em> : null}</span>
+        <span className="admin-staff-actions">
+          {s.email !== me.email && <button className="admin-link-btn" onClick={() => newLink(s.email)}>New setup link</button>}
+          {!s.is_owner && <button className="admin-danger" onClick={() => window.confirm(`Remove ${s.email}?`) && act(() => api(`/staff/${encodeURIComponent(s.email)}`, { method: 'DELETE' }), 'Removed.')}>Remove</button>}
+        </span>
+      </li>)}</ul>
+      {issued ? <LinkBox email={issued.email} link={issued.link} onClose={() => setIssued(null)} /> :
+        <form className="admin-signin" onSubmit={add}>
+          <label>Add staff by email<input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="name@example.com" /></label>
+          <button className="solid-button">Create setup link</button>
+          <p className="admin-tip">They choose their own password. You never see it.</p>
+        </form>}
     </section>}
     <section className="admin-card">
       <h2>Change your password</h2>
@@ -229,10 +258,38 @@ function Team({ me }: { me: Me }) {
   </div>;
 }
 
+function Setup({ token, onDone }: { token: string; onDone: () => void }) {
+  const [email, setEmail] = useState<string | null>(null);
+  const [err, setErr] = useState('');
+  const [pw, setPw] = useState({ a: '', b: '' });
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { api<{ email: string }>(`/setup/${encodeURIComponent(token)}`).then(r => setEmail(r.email)).catch(e => setErr((e as Error).message)); }, [token]);
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (pw.a.length < 8) { setErr('Use at least 8 characters.'); return; }
+    if (pw.a !== pw.b) { setErr('The two passwords do not match.'); return; }
+    setBusy(true); setErr('');
+    try { await post('/setup', { token, password: pw.a }); window.history.replaceState(null, '', '/admin'); onDone(); } catch (x) { setErr((x as Error).message); } finally { setBusy(false); }
+  }
+  return <section className="admin section-wrap"><form className="admin-card admin-signin" onSubmit={submit}>
+    <p className="eyebrow">Artios Fashion House</p>
+    <h1>Create your password</h1>
+    {email ? <>
+      <p>Welcome! Choose a password for <strong>{email}</strong>. Only you will know it.</p>
+      <input type="email" value={email} autoComplete="username" readOnly hidden />
+      <label>New password (8+ characters)<input type="password" required minLength={8} value={pw.a} onChange={e => setPw({ ...pw, a: e.target.value })} autoComplete="new-password" /></label>
+      <label>Type it again<input type="password" required value={pw.b} onChange={e => setPw({ ...pw, b: e.target.value })} autoComplete="new-password" /></label>
+      <button className="solid-button" disabled={busy}>{busy ? 'Saving…' : 'Save and sign in'}</button>
+    </> : !err && <p>Checking your link…</p>}
+    {err && <p className="admin-error">{err}</p>}
+  </form></section>;
+}
+
 export default function Admin() {
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const [offline, setOffline] = useState('');
   const [tab, setTab] = useState<'products' | 'orders' | 'team'>('orders');
+  const [setupToken, setSetupToken] = useState(() => new URLSearchParams(window.location.search).get('setup'));
   const check = useCallback(async () => {
     try { setMe(await api<Me>('/me')); } catch (e) {
       const status = (e as { status?: number }).status;
@@ -243,6 +300,7 @@ export default function Admin() {
   useEffect(() => { void check(); }, [check]);
   useEffect(() => { document.title = 'Admin · Artios Fashion House'; return () => { document.title = 'Artios Fashion House'; }; }, []);
 
+  if (setupToken) return <Setup token={setupToken} onDone={() => { setSetupToken(null); void check(); }} />;
   if (me === undefined) return <section className="admin section-wrap"><p>Loading…</p></section>;
   if (!me) return <SignIn onDone={check} offline={offline} />;
   return <section className="admin section-wrap">

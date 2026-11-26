@@ -598,3 +598,13 @@ html.lenis, html.lenis body { height: auto; }
 .lb-meta { position: absolute; bottom: 22px; left: 0; right: 0; margin: 0; display: flex; justify-content: center; align-items: center; gap: 10px; font: 500 .55rem 'Inter', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #bdb4a8; }
 .lb-meta span { margin-left: 14px; color: var(--gold-2); }
 @media (max-width: 767px) { .lb-nav { display: none; } .lb-stage { width: 100vw; height: 76vh; } }
+
+/* Admin: setup links */
+.admin-staff li { align-items: center; flex-wrap: wrap; }
+.admin-staff-actions { display: flex; gap: 12px; align-items: center; }
+.admin-link-btn { background: none; border: 0; padding: 0; cursor: pointer; font: 500 .56rem 'Inter', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.admin-pending { font-style: normal; color: var(--gold); }
+.admin-link { border: 1px solid var(--gold); background: rgba(176,141,79,.08); padding: 16px; margin-top: 14px; display: grid; gap: 10px; }
+.admin-link p { margin: 0; font: 400 1rem/1.45 'Cormorant Garamond', serif; color: var(--muted); }
+.admin-link input { width: 100%; font: 400 .62rem 'Inter', sans-serif; padding: 10px; border: 1px solid var(--line); background: #fff; }
+.admin-link-actions { display: flex; gap: 8px; flex-wrap: wrap; }
