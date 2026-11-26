@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { RotateCcw, Ruler, Check } from 'lucide-react';
+import { RotateCcw, Ruler, Check, PenLine } from 'lucide-react';
 import type { Product } from '../data/products';
 import { findColor } from '../data/products';
 import { phrases } from '../brand';
@@ -20,6 +20,9 @@ export default function Configurator({ product, initialColor, showNote = false, 
   const [color, setColor] = useState(findColor(product, initialColor)!.name);
   const [side, setSide] = useState<LogoSide>('centre');
   const [phrase, setPhrase] = useState<string>(phrases[3]);
+  const [custom, setCustom] = useState(false);
+  const [ownText, setOwnText] = useState('');
+  const customRef = useRef<HTMLInputElement>(null);
   const [placement, setPlacement] = useState<'front' | 'back'>('front');
   const [size, setSize] = useState<string>();
   const [note, setNote] = useState('');
@@ -39,7 +42,9 @@ export default function Configurator({ product, initialColor, showNote = false, 
   function choosePlacement(p: 'front' | 'back') { setPlacement(p); setView(p); setPhoto(null); }
   function add() {
     if (!size) { setSizeError(true); sizeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-    addItem(product, { color, size, side, phrase: phrase || undefined, placement: phrase ? placement : undefined, note: note.trim() || undefined });
+    const text = phrase.trim();
+    if (custom && !text) { customRef.current?.focus(); return; }
+    addItem(product, { color, size, side, phrase: text || undefined, placement: text ? placement : undefined, note: note.trim() || undefined });
     setAdded(true);
   }
 
@@ -78,14 +83,23 @@ export default function Configurator({ product, initialColor, showNote = false, 
       </fieldset>
 
       <fieldset className="opt">
-        <legend>Catch phrase</legend>
+        <legend>Your words <em>{custom ? 'Your own' : phrase ? 'Catch phrase' : 'None'}</em></legend>
         <div className="phrase-list">
-          {phrases.map(p => <button key={p} type="button" className={`phrase ${phrase === p ? 'is-active' : ''}`} aria-pressed={phrase === p} onClick={() => { setPhrase(p); setView(placement); setPhoto(null); }}><span className="phrase-dot" />“{p}”</button>)}
-          <button type="button" className={`phrase phrase-none ${phrase === '' ? 'is-active' : ''}`} aria-pressed={phrase === ''} onClick={() => { setPhrase(''); setView('front'); }}><span className="phrase-dot" />No phrase, logo only</button>
+          {phrases.map(p => <button key={p} type="button" className={`phrase ${!custom && phrase === p ? 'is-active' : ''}`} aria-pressed={!custom && phrase === p} onClick={() => { setCustom(false); setPhrase(p); setView(placement); setPhoto(null); }}><span className="phrase-dot" />{p}</button>)}
+          <div className={`phrase phrase-own ${custom ? 'is-active' : ''}`}>
+            <button type="button" aria-pressed={custom} onClick={() => { setCustom(true); setPhrase(ownText); setView(placement); setPhoto(null); window.setTimeout(() => customRef.current?.focus(), 30); }}><span className="phrase-dot" /><PenLine size={15} strokeWidth={1.4} /> Write your own</button>
+            {custom && <label className="own-field">
+              <span className="sr-only">Your own words</span>
+              <input ref={customRef} value={ownText} maxLength={40} placeholder="Type the words you want printed" autoComplete="off"
+                onChange={e => { setOwnText(e.target.value); setPhrase(e.target.value); setPhoto(null); }} />
+              <span className="own-count" aria-live="polite">{ownText.length}/40</span>
+            </label>}
+          </div>
+          <button type="button" className={`phrase phrase-none ${!custom && phrase === '' ? 'is-active' : ''}`} aria-pressed={!custom && phrase === ''} onClick={() => { setCustom(false); setPhrase(''); setView('front'); }}><span className="phrase-dot" />No phrase, logo only</button>
         </div>
       </fieldset>
 
-      {phrase && <fieldset className="opt">
+      {(phrase || custom) && <fieldset className="opt">
         <legend>Phrase placement</legend>
         <div className="segmented">
           <button type="button" className={placement === 'front' ? 'is-active' : ''} aria-pressed={placement === 'front'} onClick={() => choosePlacement('front')}>Under the logo</button>

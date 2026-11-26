@@ -27,6 +27,18 @@ export default function Masthead() {
   const searchInput = useRef<HTMLInputElement>(null);
   const { count, lastAdded } = useCart();
   const overHero = pathname === '/' && !scrolled && !menuOpen;
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - last) < 6) return;
+      setHidden(y > last && y > 320);
+      last = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const results = useMemo(() => {
     const term = query.trim().toLocaleLowerCase();
     if (!term) return [];
@@ -45,7 +57,7 @@ export default function Masthead() {
   }, [searchOpen]);
 
   return <>
-    <header className={`mast ${overHero ? 'is-hero' : 'is-solid'} ${scrolled ? 'is-scrolled' : ''}`}>
+    <header className={`mast ${overHero ? 'is-hero' : 'is-solid'} ${scrolled ? 'is-scrolled' : ''} ${hidden && !menuOpen && !searchOpen && !bagOpen ? 'is-hidden' : ''}`}>
       <Link className="mast-brand" to="/" aria-label="Artios Fashion House home"><Monogram className="mast-mark" /><span>Artios <em>Fashion House</em></span></Link>
       <nav className={`mast-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Main navigation">
         {links.map((l, i) => <motion.div key={l.to} initial={false} animate={menuOpen ? { opacity: 1, y: 0 } : undefined} transition={{ delay: 0.05 * i }}>

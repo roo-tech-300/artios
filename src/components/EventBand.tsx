@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CalendarPlus, MapPin, Clock, Sparkles, MessageCircle } from 'lucide-react';
 import Eyebrow from './Eyebrow';
+import Lantern from './Lantern';
 import { event, eventPhase, downloadInvite, googleCalendarLink } from '../event';
 import { whatsappLink } from '../config';
 
@@ -34,16 +35,10 @@ export default function EventBand() {
   const rsvp = whatsappLink(`Hello Artios, I would love to attend ${event.name} on ${event.dateLabel} at ${event.venue}, ${event.city}. Please save me a seat.`);
   return <section className="ev" id="alatupa" aria-labelledby="ev-title">
     <div className="ev-glow" aria-hidden="true" />
-    <motion.div className="ev-card" aria-hidden="true" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 1.2, ease }}>
-      <svg className="ev-arch" viewBox="0 0 300 420" preserveAspectRatio="none"><path d="M6 414 V150 A144 144 0 0 1 294 150 V414 Z" /><path d="M18 402 V152 A132 132 0 0 1 282 152 V402 Z" /></svg>
-      <div className="ev-flame" />
-      <span className="ev-card-k">Alátùpà</span>
-      <span className="ev-card-day">27</span>
-      <span className="ev-card-month">November</span>
-      <span className="ev-card-rule" />
-      <span className="ev-card-meta">Friday · 3 PM</span>
-      <span className="ev-card-meta">Minna</span>
-    </motion.div>
+    <motion.figure className="ev-lantern" aria-hidden="true" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 1.4, ease }}>
+      <Lantern />
+      <figcaption><span>27</span> November · Minna</figcaption>
+    </motion.figure>
     <motion.div className="ev-copy" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 1, ease }}>
       <Eyebrow>{phase === 'live' ? 'Happening now · You are invited' : 'An evening by Artios · You are invited'}</Eyebrow>
       <h2 id="ev-title">Alátùpà <em>– Light Bearer</em></h2>

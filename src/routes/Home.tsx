@@ -74,8 +74,8 @@ function StudioTeaser() {
     <motion.div className="teaser-copy" initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 1, ease }}>
       <Eyebrow>The design studio</Eyebrow>
       <h2>Tailored for <em>impact.</em><br />Designed by you.</h2>
-      <p>Choose your piece and colour, then pick the words you carry: “{phrase}”. Place the Artios mark top left or top right, and see it come alive before you order.</p>
-      <ul><li>5 colours</li><li>5 catch phrases</li><li>Front or back</li><li>Made to order</li></ul>
+      <p>Choose your piece and colour, pick one of our phrases or write your own words, place the Artios mark, and watch it come alive before you order. Now showing: <em className="teaser-phrase">{phrase}</em></p>
+      <ul><li>5 colours</li><li>Your own words</li><li>Front or back</li><li>Made to order</li></ul>
       <Link to="/studio" className="solid-button">Open the design studio</Link>
     </motion.div>
   </section>;
@@ -134,7 +134,7 @@ function HowItWorks() {
 
 const faqs = [
   { q: 'How do I place an order?', a: 'Add your pieces to the bag and go to checkout. Fill in your delivery details, transfer the total to our account, then send the order on WhatsApp with your receipt. We confirm everything with you in that chat.' },
-  { q: 'Can I customise my T-shirt or hoodie?', a: 'Yes. Choose from five colours and five catch phrases, put the Artios mark on the left, centre or right, and place your phrase under the logo or large on the back. Anything else, write it in the note at checkout.' },
+  { q: 'Can I customise my T-shirt or hoodie?', a: 'Yes. Choose from five colours, pick one of our phrases or write your own words, put the Artios mark on the left, centre or right, and place the words under the logo or large on the back. Anything else, write it in the note at checkout.' },
   { q: 'Do you deliver outside Minna?', a: 'We deliver across Nigeria. The delivery fee depends on where you are, and we confirm it with you on WhatsApp before your order is sent out.' },
   { q: 'How long will my order take?', a: 'Apparel is made to order, so timing depends on your piece and quantity. We give you a date when we confirm your payment.' },
   { q: 'Which size should I choose?', a: 'Every T-shirt and hoodie page has a size guide. If you are between sizes, take the larger one, or message us and we will help you choose.' },

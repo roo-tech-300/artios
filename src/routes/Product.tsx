@@ -5,6 +5,8 @@ import Eyebrow from '../components/Eyebrow';
 import ProductTile from '../components/ProductTile';
 import Configurator from '../components/Configurator';
 import StickyBuy from '../components/StickyBuy';
+import Lightbox from '../components/Lightbox';
+import { Maximize2 } from 'lucide-react';
 import { useProducts } from '../context/ProductsContext';
 import type { Product } from '../data/products';
 import { formatPrice } from '../lib/format';
@@ -32,6 +34,8 @@ function Heading({ product }: { product: Product }) {
 function SimpleProduct({ product }: { product: Product }) {
   const gallery = [product.image, product.lifestyle].filter(Boolean) as string[];
   const [active, setActive] = useState(0);
+  const [viewer, setViewer] = useState<number | null>(null);
+  const [lens, setLens] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const buyRef = useRef<HTMLButtonElement>(null);
   const { addItem } = useCart();
@@ -40,8 +44,12 @@ function SimpleProduct({ product }: { product: Product }) {
   const add = () => { addItem(product); setAdded(true); };
   return <div className="config">
     <div className="config-stage">
-      <div className="stage-frame">
+      <div className={`stage-frame is-zoomable ${lens ? 'is-lens' : ''}`} style={lens ? { ['--lens' as string]: lens } : undefined}
+        role="button" tabIndex={0} aria-label="Open photos full screen"
+        onMouseMove={e => { if (!window.matchMedia('(hover: hover)').matches) return; const r = e.currentTarget.getBoundingClientRect(); setLens(`${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`); }}
+        onMouseLeave={() => setLens(null)} onClick={() => setViewer(active)} onKeyDown={e => { if (e.key === 'Enter') setViewer(active); }}>
         <AnimatePresence mode="wait"><motion.img key={gallery[active]} className="stage-photo" src={gallery[active]} alt={product.name} initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} /></AnimatePresence>
+        <span className="stage-expand"><Maximize2 size={14} strokeWidth={1.5} /> View full screen</span>
       </div>
       {gallery.length > 1 && <div className="stage-thumbs">{gallery.map((src, i) => <button key={src} className={i === active ? 'is-active' : ''} onClick={() => setActive(i)} aria-label={`Image ${i + 1}`}><img src={src} alt="" /></button>)}</div>}
     </div>
@@ -56,6 +64,7 @@ function SimpleProduct({ product }: { product: Product }) {
       <Info product={product} />
     </div>
     <StickyBuy target={buyRef} name={product.name} price={product.price} label="Add to bag" onClick={add} />
+    <Lightbox images={gallery} index={viewer} alt={product.name} onClose={() => setViewer(null)} />
   </div>;
 }
 

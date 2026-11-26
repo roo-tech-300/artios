@@ -6,6 +6,8 @@ import Intro from './components/Intro';
 import Marquee from './components/Marquee';
 import { CartProvider } from './context/CartContext';
 import WhatsAppButton from './components/WhatsAppButton';
+import ScrollThread from './components/ScrollThread';
+import useSmoothScroll from './hooks/useSmoothScroll';
 import { event, eventPhase } from './event';
 import { ProductsProvider } from './context/ProductsContext';
 
@@ -13,14 +15,16 @@ const baseNotices = ['Order on WhatsApp', 'Delivery across Nigeria', 'Apparel ma
 
 function Layout() {
   const { pathname } = useLocation();
+  useSmoothScroll();
   const notices = eventPhase() === 'over' ? baseNotices : [`${event.name} · ${event.shortDate} · ${event.city}`, ...baseNotices];
   return <MotionConfig reducedMotion="user">
     <ProductsProvider><CartProvider>
       <ScrollRestoration />
       <Intro />
+      <ScrollThread />
       <div className="notice-bar"><Marquee items={notices} tone="gold" speed={46} /></div>
       <Masthead />
-      <motion.main key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}><Outlet /></motion.main>
+      <motion.main key={pathname} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}><Outlet /></motion.main>
       <Footer />
       <WhatsAppButton />
     </CartProvider></ProductsProvider>

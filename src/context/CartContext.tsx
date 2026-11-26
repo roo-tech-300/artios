@@ -29,7 +29,7 @@ export function describeOptions(o: LineOptions) {
   if (o.color) parts.push(o.color);
   if (o.size) parts.push(`Size ${o.size}`);
   if (o.side) parts.push(o.side === 'centre' ? 'Logo centre' : `Logo top ${o.side}`);
-  if (o.phrase) parts.push(`“${o.phrase}”${o.placement === 'back' ? ' on back' : ' on front'}`);
+  if (o.phrase) parts.push(`Words: ${o.phrase} (${o.placement === 'back' ? 'back' : 'front'})`);
   else if (o.side) parts.push('No phrase');
   if (o.note) parts.push(`Note: ${o.note}`);
   return parts;

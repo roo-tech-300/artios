@@ -50,7 +50,7 @@ export default function GarmentPreview({ garment, color, side = 'centre', phrase
 
   const glowAt = (cx: number, cy: number, r: number) => glow ? <circle className="lantern-glow" cx={cx} cy={cy} r={r} fill={`url(#glow-${id})`} /> : null;
   const phraseLines = (text: string, cx: number, top: number, size: number, max: number, italic = true) =>
-    splitLines(text, max).map((l, i, all) => <text key={i} x={cx} y={top + i * size * 1.2} textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle={italic ? 'italic' : 'normal'} fontWeight={500} fontSize={size} fill={ink}>{i === 0 ? '“' : ''}{l}{i === all.length - 1 ? '”' : ''}</text>);
+    splitLines(text, max).map((l, i) => <text key={i} x={cx} y={top + i * size * 1.2} textAnchor="middle" fontFamily="'Cormorant Garamond', serif" fontStyle={italic ? 'italic' : 'normal'} fontWeight={500} fontSize={size} fill={ink}>{l}</text>);
 
   // Lantern + ALÁTÙPÀ + Artios mark, as one lockup. Returns the bottom y so phrases can follow.
   const lockup = (cx: number, top: number, lw: number) => {

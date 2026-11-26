@@ -542,3 +542,59 @@ html, body { overflow-x: clip; }
   .cats { padding: 64px 0 80px; }
 }
 @media (prefers-reduced-motion: reduce) { .hx-bg img, .ev-flame, .ev-glow { animation: none; } }
+
+/* ---------- Write your own words ---------- */
+.phrase-own { display: block; padding: 0; cursor: default; }
+.phrase-own > button { display: flex; align-items: center; gap: 12px; width: 100%; background: none; border: 0; padding: 13px 14px; font: italic 400 1.12rem/1.25 'Cormorant Garamond', serif; color: var(--ink); cursor: pointer; text-align: left; }
+.phrase-own > button svg { color: var(--gold); margin-left: -4px; }
+.phrase-own.is-active .phrase-dot { border-color: var(--ink); }
+.phrase-own.is-active .phrase-dot::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--gold); }
+.own-field { display: flex; align-items: center; gap: 10px; margin: 0 14px 14px 41px; border-bottom: 1px solid rgba(14,11,10,.35); }
+.own-field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: 8px 0 10px; font: italic 500 1.2rem 'Cormorant Garamond', serif; color: var(--ink); }
+.own-field input::placeholder { color: #9b9289; font-weight: 400; }
+.own-field:focus-within { border-color: var(--gold); }
+.own-count { font: 500 .55rem 'Inter', sans-serif; letter-spacing: .08em; color: var(--stone); font-variant-numeric: tabular-nums; }
+.teaser-phrase { color: var(--gold-2); font-style: italic; }
+
+/* ---------- Event lantern (vector) ---------- */
+.ev-lantern { position: relative; margin: 0; justify-self: center; display: flex; flex-direction: column; align-items: center; }
+.ev-lantern .lantern { width: clamp(200px, 22vw, 300px); height: auto; overflow: visible; filter: drop-shadow(0 40px 60px rgba(0,0,0,.45)); }
+.ev-lantern figcaption { margin-top: 18px; font: 500 .56rem 'Inter', sans-serif; letter-spacing: .32em; text-transform: uppercase; color: #bdb4a8; }
+.ev-lantern figcaption span { font: 400 1.6rem 'Cormorant Garamond', serif; letter-spacing: 0; color: var(--gold-2); margin-right: 6px; vertical-align: -3px; }
+.lantern-flame { transform-box: fill-box; transform-origin: 50% 90%; animation: lantern-flame 2.6s ease-in-out infinite; }
+@keyframes lantern-flame { 0%, 100% { transform: scale(1, 1) skewX(0deg); } 30% { transform: scale(.94, 1.06) skewX(-2deg); } 55% { transform: scale(1.04, .96) skewX(1.5deg); } 80% { transform: scale(.97, 1.03) skewX(-1deg); } }
+.lantern-halo { transform-box: fill-box; transform-origin: center; animation: lantern-halo 3.4s ease-in-out infinite; }
+@keyframes lantern-halo { 0%, 100% { opacity: .85; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+.lantern-glass { animation: lantern-glass 2.6s ease-in-out infinite; }
+@keyframes lantern-glass { 0%, 100% { opacity: 1; } 45% { opacity: .9; } 70% { opacity: .97; } }
+@media (max-width: 767px) { .ev-lantern { margin-bottom: 20px; } .ev-lantern .lantern { width: 190px; } }
+@media (prefers-reduced-motion: reduce) { .lantern-flame, .lantern-halo, .lantern-glass { animation: none; } }
+
+/* ---------- Experience: scroll thread, hiding header ---------- */
+.scroll-thread { position: fixed; left: 0; right: 0; top: 0; height: 2px; z-index: 60; background: linear-gradient(90deg, #8a6a35, var(--gold-2), #f0d79c); transform-origin: 0 50%; pointer-events: none; }
+.mast { transition: top .5s var(--ease), height .5s var(--ease), background .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease), transform .6s var(--ease); }
+.mast.is-hidden { transform: translateY(-115%); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* ---------- Product photos: hover lens + full-screen viewer ---------- */
+.stage-frame.is-zoomable { cursor: zoom-in; }
+.stage-frame.is-zoomable .stage-photo { transition: transform .6s var(--ease); }
+.stage-frame.is-lens .stage-photo { transform: scale(1.75) !important; transform-origin: var(--lens); transition: transform .35s var(--ease); }
+.stage-expand { position: absolute; right: 14px; bottom: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 13px; background: rgba(245,239,230,.92); color: var(--ink); font: 500 .52rem 'Inter', sans-serif; letter-spacing: .14em; text-transform: uppercase; pointer-events: none; opacity: 0; transform: translateY(6px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+.stage-frame.is-zoomable:hover .stage-expand { opacity: 1; transform: none; }
+@media (hover: none) { .stage-expand { opacity: 1; transform: none; } }
+.lightbox { position: fixed; inset: 0; z-index: 80; background: rgba(14,11,10,.96); display: grid; place-items: center; touch-action: pan-y; }
+.lb-stage { position: relative; width: min(92vw, 1100px); height: min(82vh, 1100px); overflow: hidden; cursor: zoom-in; }
+.lb-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .45s var(--ease); user-select: none; }
+.lb-stage.is-zoomed { cursor: zoom-out; }
+.lb-stage.is-zoomed img { transform: scale(2.2); }
+.lb-close, .lb-nav { position: absolute; z-index: 2; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(201,166,107,.4); background: rgba(14,11,10,.6); color: var(--paper); cursor: pointer; transition: background .4s var(--ease), color .4s var(--ease); }
+.lb-close:hover, .lb-nav:hover { background: var(--gold); color: var(--ink); }
+.lb-close { top: 20px; right: 20px; }
+.lb-prev { left: 20px; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 20px; top: 50%; transform: translateY(-50%); }
+.lb-meta { position: absolute; bottom: 22px; left: 0; right: 0; margin: 0; display: flex; justify-content: center; align-items: center; gap: 10px; font: 500 .55rem 'Inter', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #bdb4a8; }
+.lb-meta span { margin-left: 14px; color: var(--gold-2); }
+@media (max-width: 767px) { .lb-nav { display: none; } .lb-stage { width: 100vw; height: 76vh; } }

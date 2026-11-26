@@ -22,7 +22,7 @@ export default function Studio() {
         <h1>Make it <em>yours.</em></h1>
         <p>Pick your piece, your colour and the words you carry. Place your mark top left or top right, and tell us anything else you want. We make it to order.</p>
       </motion.div>
-      <ol className="studio-steps">{['Choose your piece', 'Pick a colour', 'Choose your phrase', 'Place your mark'].map((s, i) => <motion.li key={s} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 + i * 0.08, ease }}><span>0{i + 1}</span>{s}</motion.li>)}</ol>
+      <ol className="studio-steps">{['Choose your piece', 'Pick a colour', 'Write your words', 'Place your mark'].map((s, i) => <motion.li key={s} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.25 + i * 0.08, ease }}><span>0{i + 1}</span>{s}</motion.li>)}</ol>
     </section>
     <section className="studio section-wrap">
       <Configurator key={item.id} product={item} showNote initialColor={params.get('color') ?? undefined} header={<div className="pdp-head">
