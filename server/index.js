@@ -83,13 +83,15 @@ function setSession(res, value, maxAge) {
 
 // Simple in-memory rate limiter (per IP and key).
 const hits = new Map();
-function limited(key, max, windowMs) {
+function limited(key, max, windowMs, record = true) {
   const now = Date.now();
   const list = (hits.get(key) || []).filter(t => now - t < windowMs);
-  list.push(now); hits.set(key, list);
+  if (record) list.push(now);
+  hits.set(key, list);
   if (hits.size > 5000) hits.clear();
   return list.length > max;
 }
+const noteFailure = key => limited(key, Infinity, 15 * 60e3);
 
 const needDb = (req, res, next) => (dbReady ? next() : res.status(503).json({ error: 'The admin database is not connected yet.' }));
 async function needAdmin(req, res, next) {
@@ -141,9 +143,10 @@ api.post('/orders', needDb, wrap(async (req, res) => {
 api.post('/login', needDb, wrap(async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   const password = String(req.body?.password || '');
-  if (limited(`login:${req.ip}`, 10, 15 * 60e3)) return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  // Only wrong passwords count towards the limit: 10 per 15 minutes per connection.
+  if (limited(`login:${req.ip}`, 10, 15 * 60e3, false)) return res.status(429).json({ error: 'Too many wrong attempts. Try again in 15 minutes.' });
   const { rows } = await pool.query('select email, password_hash from admins where email = $1', [email]);
-  if (!rows.length || !checkPassword(password, rows[0].password_hash)) return res.status(401).json({ error: 'Wrong email or password.' });
+  if (!rows.length || !checkPassword(password, rows[0].password_hash)) { noteFailure(`login:${req.ip}`); return res.status(401).json({ error: 'Wrong email or password.' }); }
   setSession(res, makeToken(email), SESSION_DAYS * 86400);
   res.json({ ok: true });
 }));
